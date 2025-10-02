@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 const SLICE_NAME = 'uiState';
 
@@ -17,5 +17,11 @@ export const uiStateSlice = createSlice({
   name: SLICE_NAME,
   initialState,
   reducers: {
+    setCurrentSectionId(state, action: PayloadAction<string>) {
+      state.currentSectionId = action.payload;
+    },
+    setCurrentQuestionId(state, action: PayloadAction<string>) {
+      state.currentQuestionId = action.payload;
+    },
   },
 });

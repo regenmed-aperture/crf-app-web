@@ -8,9 +8,7 @@ const combined = combineReducers({
 });
 
 const store = configureStore({
-  reducer: (state, action) => {
-    return combined(state, action);
-  },
+  reducer: combined,
 });
 
 export default store;

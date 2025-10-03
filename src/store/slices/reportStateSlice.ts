@@ -23,10 +23,10 @@ export const reportStateSlice = createSlice({
   name: SLICE_NAME,
   initialState,
   reducers: {
-    setSections(state, action) {
+    setSections(state, action: PayloadAction<ReportSection[]>) {
       state.sections = action.payload;
     },
-    setQuestions(state, action) {
+    setQuestions(state, action: PayloadAction<[string, ReportQuestion][]>) {
       state.questions = new Map(action.payload);
     },
     addOrUpdateResponse(state, action: PayloadAction<{questionId: string, response: ReportQuestionResponse}>) {

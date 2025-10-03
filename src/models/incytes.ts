@@ -4,7 +4,12 @@ export enum IncytesReportQuestionType {
 }
 
 export interface IncytesReportQuestion {
+  section: string,
   prompt: string,
   type: IncytesReportQuestionType,
   options?: string[],
+}
+
+export interface IncytesPatientGetByIdResponse {
+  questions: IncytesReportQuestion[],
 }

@@ -2,10 +2,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { useAppDispatch } from "@/store/hooks";
+import { setCurrentView, UIView } from "@/store/slices/uiStateSlice";
 import { CheckCircle2, ChevronRight, Circle, CircleQuestionMark, Clock, ListOrdered, TrendingUp } from "lucide-react";
 import type React from "react";
 
 export const ReportLandingPageView: React.FC = () => {
+  const dispatch = useAppDispatch();
+  
+  const onBeginPressed = () => {
+    dispatch(setCurrentView(UIView.VIEW_CONSENT));
+  }
+
   return (
     <div className="w-full h-full flex flex-row justify-center items-center">
       <div className="w-full max-w-5xl flex flex-col justify-center gap-10">
@@ -103,7 +111,7 @@ export const ReportLandingPageView: React.FC = () => {
             <Separator />
             <CardFooter className="px-4 justify-between">
               <Button variant="link">Cancel & Withdraw Consent</Button>
-              <Button>Begin <ChevronRight /></Button>
+              <Button onClick={onBeginPressed}>Begin <ChevronRight /></Button>
             </CardFooter>
           </Card>
           <div className="flex flex-col gap-4 w-80">

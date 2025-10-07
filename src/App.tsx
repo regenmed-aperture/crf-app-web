@@ -8,7 +8,7 @@ export const App: React.FC = () => {
     <BrowserRouter basename={import.meta.env.BASE_URL}> {/* this pulls the base path from the vite config */}
       <Routes>
         <Route element={<MainLayout />}>
-          <Route path="/report" element={<ReportRoute />} />
+          <Route path="/" element={<ReportRoute />} />
         </Route>
       </Routes>
     </BrowserRouter>

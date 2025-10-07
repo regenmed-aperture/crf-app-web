@@ -1,10 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { useAppDispatch } from "@/store/hooks";
+import { setCurrentView, UIView } from "@/store/slices/uiStateSlice";
 import { FileText } from "lucide-react";
 import React from "react";
 
 export const ReportConsentFormView: React.FC = () => {
+  const dispatch = useAppDispatch();
+
+  const onConsentGranted = () => {
+    dispatch(setCurrentView(UIView.VIEW_QUESTIONS));
+  };
+
   return (
     <div className="w-full h-full flex flex-row justify-center items-center p-4">
       <div className="w-full max-w-2xl flex flex-col justify-center gap-6">
@@ -73,7 +81,7 @@ export const ReportConsentFormView: React.FC = () => {
               <Button variant="outline" className="flex-1">
                 I do not consent
               </Button>
-              <Button className="flex-1">
+              <Button className="flex-1" onClick={onConsentGranted}>
                 I consent to participate
               </Button>
             </div>

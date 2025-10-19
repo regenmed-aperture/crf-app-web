@@ -1,8 +1,22 @@
-import type { IncytesPatientGetByIdResponse } from "../models/incytes";
+import type { IncytesBilateralQuestionCollectionResponseModel } from "@/models/dto/incytes";
 import type { ReportQuestion, ReportSection } from "../models/report";
+import { randomIntFromInterval } from "@/util/utils";
 
-const MOCK_DATA: IncytesPatientGetByIdResponse = {
-  questions: []
+const MOCK_DATA: IncytesBilateralQuestionCollectionResponseModel = {
+  answeredQuestions: [
+    {
+      revisions: [],
+      questions: [],
+      patientCaseSurveyInstanceId: 0,
+      bilateralAreaId: null,
+      patientCaseSurveyInstanceVersion: 0
+    }
+  ],
+  isSuccessful: true,
+  errorMessage: "",
+  errorCode: 0,
+  redirectTo: "",
+  hasDataOrDataNotAvailable: false
 }
 
 export const patientService = {
@@ -11,35 +25,38 @@ export const patientService = {
     sections: ReportSection[];
     questions: Record<string, ReportQuestion>;
   }> {
-    //const response = await fetch(`/api/patient/${reportId}`);
-    //const data: IncytesPatientGetByIdResponse = await response.json();
-    const data = MOCK_DATA;
+    return new Promise((resolve, reject) => {
+      //const response = await fetch(`/api/patient/${reportId}`);
+      //const data: IncytesBilateralQuestionCollectionResponseModel = await response.json();
+      const data = MOCK_DATA;
 
-    const sections: ReportSection[] = [];
-    const questionsObj: Record<string, ReportQuestion> = {};
-    data.questions.forEach(q => {
-      const newId = crypto.randomUUID() as string;
-      questionsObj[newId] = {
-        id: newId,
-        ...q,
+      if (data.answeredQuestions.length === 0) {
+        // error
+        reject();
       }
 
-      let existingIdx = sections.findIndex(v => v.name === q.section);
-      if (existingIdx === -1) {
-        sections.push({
-          name: q.section,
-          id: crypto.randomUUID() as string,
-          color: "green",
-          questions: []
-        })
-        existingIdx = sections.length - 1;
-      }
-      sections[existingIdx].questions.push(newId);
+      const sections: ReportSection[] = [];
+      const questionsObj: Record<string, ReportQuestion> = {};
+      data.answeredQuestions[0].questions.forEach(q => {
+        let questionId = q.id ? q.id : randomIntFromInterval(10000, 99999);
+
+        let existingIdx = sections.findIndex(v => v.name === q.bundleName);
+        if (existingIdx === -1) {
+          sections.push({
+            name: q.bundleName,
+            id: q.bundleId,
+            color: "green",
+            questionIds: []
+          })
+          existingIdx = sections.length - 1;
+        }
+        sections[existingIdx].questionIds.push(questionId);
+      });
+
+      resolve({
+        sections: sections,
+        questions: questionsObj,
+      });
     });
-
-    return {
-      sections: sections,
-      questions: questionsObj,
-    };
   },
 }

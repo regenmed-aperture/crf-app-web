@@ -1,14 +1,22 @@
-import type { IncytesReportQuestion } from "./incytes";
+import type { IncytesAnalogQuestionModel, IncytesDateQuestionModel, IncytesFileQuestionModel, IncytesGroupedQuestionModel, IncytesMultipleValueQuestionModel, IncytesNumberQuestionModel, IncytesQuestionBase, IncytesSingleValueQuestionModel, IncytesTextQuestionModel, IncytesTFQuestionModel } from "./incytes";
 
-export interface ReportQuestion extends IncytesReportQuestion {
-  id: string,
-}
+export type ReportQuestion =
+  | IncytesSingleValueQuestionModel
+  | IncytesMultipleValueQuestionModel
+  | IncytesGroupedQuestionModel
+  | IncytesTFQuestionModel
+  | IncytesTextQuestionModel
+  | IncytesNumberQuestionModel
+  | IncytesDateQuestionModel
+  | IncytesAnalogQuestionModel
+  | IncytesFileQuestionModel
+  | IncytesQuestionBase;
 
 export interface ReportSection {
-  id: string,
+  id: number,
   name: string,
   color: string,
-  questions: string[],
+  questionIds: number[],
 }
 
 export interface ReportQuestionResponse {

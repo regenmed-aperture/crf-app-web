@@ -60,6 +60,35 @@ export const patientService = {
     });
   },
 
+  /**
+   * Auto sign in user when they are following a secure link
+   *
+   * @param {string} data - encrypted object containing information necessary for authorization
+   * @param {string} token - verification token
+   * @returns {IncytesPatientAuthenticationResponseModel} response indicating if the authorization was successful
+   */
+  async autoSignIn(data: string, token: string): Promise<IncytesPatientAuthenticationResponseModel> {
+    return fetch("/api/authorization/autosignin", {
+        method: 'post',
+        headers: { 
+          'content-type': 'application/json',
+          'time-zone-offset': `${-(new Date().getTimezoneOffset() / 60)}`
+        },
+        body: JSON.stringify({
+          data: data,
+          token: token
+        })
+    })
+    .then(response => {
+      if (!response.ok){
+        throw new Error("Bad Request");
+      }
+
+      return response.json();
+    })
+    .then(data => data as IncytesPatientAuthenticationResponseModel);
+  },
+
 
   /**
    * Verifies MFA phone code.

@@ -252,49 +252,6 @@ export interface IncytesFileQuestionModel extends IncytesQuestionBase {
   mediumThumbnailUrl: string;
 }
 
-/** User models  */
-
-export enum QuestionType {
-  Invalid = 0,
-  SingleValue = 1,
-  MultipleValue = 2,
-  Grouped = 3,
-  TrueFalse = 4,
-  Text = 5,
-  Number = 6,
-  Date = 7,
-  Copy = 8,
-  Analog = 9,
-  Image = 10,
-  PDF = 11
-}
-
-export interface IncytesCognitoSurveyData {
-  pcsi: number;                     // PatientCaseSurveyInstanceId,
-  v: IncytesCognitoSurveyAnswer[];  // Values
-}
-
-export interface IncytesCognitoSurveyAnswer {
-  qi: number;                       // QuestionId
-  qt: QuestionType;                 // QuestionType
-  a: string;                        // Answer
-  d: Date | null;                   // AnswerDate                  
-}
-
-export interface IncytesSurveyAnswerChanges {
-  id: number;
-  uniqueId: number;
-  questionType: QuestionType;
-  oldValue: string[];
-  newValue: string[];
-}
-
-export interface IncytesCognitoSurveyAnswerChangeLog {
-  cl: number;                       // ChangeLogId
-  d: IncytesSurveyAnswerChanges[];  // Differences
-}
-
-
 export interface IncytesUserModel extends IncytesResponseModel {
   id: number;
   id36: string;
@@ -325,28 +282,9 @@ export interface IncytesUserModel extends IncytesResponseModel {
   isVerified: boolean;
   teamPatient2FAEnabled: boolean;
   patient2FAEnabled: boolean;
-  surveyAnswers: IncytesCognitoSurveyData[];
-  surveyChangeLogs: IncytesCognitoSurveyAnswerChangeLog[];
   sendRegistrationSms: boolean;
   ownerId: number;
   hasIssuesWithEmail: boolean;
   isNotificationsDisabled: boolean;
   isSelfOnboarding: boolean; 
-}
-
-export interface IncytesVerifyPhoneModel {
-  phoneNumber: string;
-  mask: string;
-  rawData: string;
-  sentUtc: Date;
-}
-
-export enum IncytesUserRegistrationStatus {
-  UserNotFound = 0,
-  RegistrationNotStarted = 1,
-  ConfirmationCodeSent = 2,
-  ConfirmationCodeAccepted = 3,
-  PasswordSettedUp = 4,
-  Registered = 5,
-  ChangePassword = 6
 }

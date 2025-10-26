@@ -2,16 +2,19 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { useAppSelector } from "@/store/hooks";
 import { CheckCircle2, TrendingUp, Calendar } from "lucide-react";
 import type React from "react";
 
 export const ReportResultsView: React.FC = () => {
+  const reportState = useAppSelector(state => state.reportState);
+
   return (
     <div className="w-full h-full flex flex-row justify-center items-center">
       <div className="w-full max-w-5xl flex flex-col justify-center gap-10">
         <div className="flex flex-row justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold">Thank you, Gleb!</h1>
+            <h1 className="text-2xl font-bold">Thank you, {reportState.user?.firstName}!</h1>
             <p className="text-muted-foreground">Your responses have been recorded</p>
           </div>
           <div className="flex items-center gap-2">
@@ -25,7 +28,7 @@ export const ReportResultsView: React.FC = () => {
               <div className="flex flex-col gap-2">
                 <h2 className="text-xl font-bold">Report Completed</h2>
                 <p className="text-sm text-muted-foreground">
-                  Knee surgery - 60 day check-in
+                  {reportState.displayTitle}
                 </p>
               </div>
             </CardHeader>

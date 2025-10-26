@@ -1,102 +1,71 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { useAppDispatch } from "@/store/hooks";
-import { setCurrentView, UIView } from "@/store/slices/uiStateSlice";
+import { SectionedProgressBar } from "@/components/SectionedProgressBar";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { setCurrentView, setCurrentSectionId, setCurrentQuestionId, UIView } from "@/store/slices/uiStateSlice";
 import { motion, AnimatePresence, type Transition } from "framer-motion";
-import { useState } from "react";
-import { IncytesQuestionType, type IncytesQuestionBase } from "../models/incytes";
-import * as protocol from "../api/observationalProtocol";
+import { useEffect, useState } from "react";
 import type React from "react";
-
-const questions: IncytesQuestionBase[] = [
-  { 
-  id: 1,
-  instanceId: 1,
-  title: "How would you rate your pain today?",
-  tag: "Pain Level",
-  isLocked: false,
-  instructions: "just choose",
-  sortOrder: 1,
-  questionType: IncytesQuestionType.Number,
-  isBundle: false,
-  bundleName: "",
-  hasFormula: false,
-  score: 1,
-  bundleId: 1,
-  bundleEntityId: 1,
-  languageId: 1,
-  lowerFence: 0,
-  upperFence: 1,
-  isUpperBreach: false,
-  isLowerBreach: false,
-  isBreach: false,
-  uniqueId: 1,
-  isOptional: false,
-  isPiData: false,
-  displayInstructionAsIcon: false,
-  answerDate: null,
-  isConditionalVisibility: false,
-  visibilityRule: "",
-  optionalRule: "",
-  isBilateral: false,
-  context: ""
-  },
-  { 
-  id: 1,
-  instanceId: 1,
-  title: "Can you walk withour assistance?",
-  tag: "Mobility",
-  isLocked: false,
-  instructions: "yes/no",
-  sortOrder: 2,
-  questionType: IncytesQuestionType.Number,
-  isBundle: true,
-  bundleName: "Mobility",
-  hasFormula: false,
-  score: 1,
-  bundleId: 1,
-  bundleEntityId: 1,
-  languageId: 1,
-  lowerFence: 0,
-  upperFence: 1,
-  isUpperBreach: false,
-  isLowerBreach: false,
-  isBreach: false,
-  uniqueId: 1,
-  isOptional: false,
-  isPiData: false,
-  displayInstructionAsIcon: false,
-  answerDate: null,
-  isConditionalVisibility: false,
-  visibilityRule: "",
-  optionalRule: "",
-  isBilateral: false,
-  context: ""
-  },
-];
+import { MultipleChoiceSingleValueQuestionBody } from "@/components/questions/MultipleChoiceSingleValueQuestionBody";
+import { IncytesQuestionType, type IncytesSingleValueQuestionModel } from "@/models/incytes";
+import { Kbd } from "@/components/ui/kbd";
+import { getBgColorTWClass } from "@/util/colors";
 
 export const ReportQuestionsView: React.FC = () => {
   const dispatch = useAppDispatch();
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const reportState = useAppSelector(state => state.reportState);
+  const uiState = useAppSelector(state => state.uiState);
 
-  // const newQuestions = protocol.getSurvey(1,1,1,1);
+  // Initialize to first section and first question if not set
+  const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+  const [currentQuestionIndexInSection, setCurrentQuestionIndexInSection] = useState(0);
+
+  // Get current section and question
+  const currentSection = reportState.sections[currentSectionIndex];
+  const currentQuestionId = currentSection?.questionIds[currentQuestionIndexInSection];
+  const currentQuestion = currentQuestionId ? reportState.questions[currentQuestionId] : null;
+
+  // Calculate total question index for progress bar
+  const currentQuestionGlobalIndex = reportState.sections
+    .slice(0, currentSectionIndex)
+    .reduce((sum, section) => sum + section.questionIds.length, 0) + currentQuestionIndexInSection;
+
+  const totalQuestions = reportState.sections.reduce((sum, section) => sum + section.questionIds.length, 0);
+
+  // Update uiStore whenever current question changes
+  useEffect(() => {
+    if (currentSection && currentQuestionId) {
+      dispatch(setCurrentSectionId(String(currentSection.id)));
+      dispatch(setCurrentQuestionId(String(currentQuestionId)));
+    }
+  }, [currentSectionIndex, currentQuestionIndexInSection, currentSection, currentQuestionId, dispatch]);
 
   const onNextClicked = () => {
-    setCurrentIndex((prev) => {
-      const next = prev + 1;
-      if (next >= questions.length) return questions.length - 1;
-      return next;
-    });
-  }
+    if (!currentSection) return;
+
+    // Check if there's a next question in current section
+    if (currentQuestionIndexInSection < currentSection.questionIds.length - 1) {
+      setCurrentQuestionIndexInSection(prev => prev + 1);
+    }
+    // Move to next section
+    else if (currentSectionIndex < reportState.sections.length - 1) {
+      setCurrentSectionIndex(prev => prev + 1);
+      setCurrentQuestionIndexInSection(0);
+    }
+  };
 
   const onPrevClicked = () => {
-    setCurrentIndex((prev) => {
-      const next = prev - 1;
-      if (next < 0) return 0;
-      return next;
-    });
-  }
+    // Check if there's a previous question in current section
+    if (currentQuestionIndexInSection > 0) {
+      setCurrentQuestionIndexInSection(prev => prev - 1);
+    }
+    // Move to previous section
+    else if (currentSectionIndex > 0) {
+      setCurrentSectionIndex(prev => prev - 1);
+      const prevSection = reportState.sections[currentSectionIndex - 1];
+      setCurrentQuestionIndexInSection(prevSection.questionIds.length - 1);
+    }
+  };
 
   const onFinishClicked = () => {
     dispatch(setCurrentView(UIView.VIEW_RESULTS));
@@ -108,18 +77,65 @@ export const ReportQuestionsView: React.FC = () => {
     ease: [0.4, 0, 0.2, 1],
   };
 
+  const isFirstQuestion = currentSectionIndex === 0 && currentQuestionIndexInSection === 0;
+  const isLastQuestion =
+    currentSectionIndex === reportState.sections.length - 1 &&
+    currentQuestionIndexInSection === currentSection?.questionIds.length - 1;
+
+  if (totalQuestions === 0 || !currentQuestion) {
+    return (
+      <div className="w-full h-full flex justify-center items-center">
+        <p className="text-muted-foreground">No questions available</p>
+      </div>
+    );
+  }
+
+  // Get previous and next question IDs for preview cards
+  const getPrevQuestionId = (): number | null => {
+    if (currentQuestionIndexInSection > 0) {
+      return currentSection.questionIds[currentQuestionIndexInSection - 1];
+    } else if (currentSectionIndex > 0) {
+      const prevSection = reportState.sections[currentSectionIndex - 1];
+      return prevSection.questionIds[prevSection.questionIds.length - 1];
+    }
+    return null;
+  };
+
+  const getNextQuestionId = (): number | null => {
+    if (currentQuestionIndexInSection < currentSection.questionIds.length - 1) {
+      return currentSection.questionIds[currentQuestionIndexInSection + 1];
+    } else if (currentSectionIndex < reportState.sections.length - 1) {
+      const nextSection = reportState.sections[currentSectionIndex + 1];
+      return nextSection.questionIds[0];
+    }
+    return null;
+  };
+
+  const prevQuestionId = getPrevQuestionId();
+  const nextQuestionId = getNextQuestionId();
+  const prevQuestion = prevQuestionId ? reportState.questions[prevQuestionId] : null;
+  const nextQuestion = nextQuestionId ? reportState.questions[nextQuestionId] : null;
+
   return (
     <div className="w-full h-full flex justify-center items-center relative overflow-hidden">
-      <div className="absolute w-full top-[40px] flex flex-row justify-center">
-        <Progress className="h-4 max-w-[500px] rounded-md!" value={(currentIndex/(questions.length-1) * 100)} />
+      <div className="absolute w-full top-[40px] flex flex-col items-center px-8 gap-6">
+        <SectionedProgressBar
+          sections={reportState.sections}
+          currentQuestionIndex={currentQuestionGlobalIndex}
+          totalQuestions={totalQuestions}
+          className="max-w-[800px]"
+        />
+        <h3 className="text-lg font-semibold">
+          {currentSection?.name}
+        </h3>
       </div>
       <div className="w-full max-w-[1500px]">
         {/* Previous card */}
         <AnimatePresence mode="popLayout">
-          {currentIndex > 0 && (
+          {prevQuestion && (
             <motion.div
-              key={`prev-${questions[currentIndex - 1].sortOrder}`}
-              layoutId={`card-${questions[currentIndex - 1].sortOrder}`}
+              key={`prev-${prevQuestionId}`}
+              layoutId={`card-${prevQuestionId}`}
               className="absolute left-0 top-1/2 -translate-y-1/2 w-80 h-64 bg-muted rounded-lg overflow-hidden"
               initial={{ opacity: 0, x: -100 }}
               animate={{ opacity: 0.6, x: 0 }}
@@ -131,29 +147,36 @@ export const ReportQuestionsView: React.FC = () => {
 
         {/* Current card */}
         <motion.div
-          key={`current-${questions[currentIndex].sortOrder}`}
-          layoutId={`card-${questions[currentIndex].sortOrder}`}
+          key={`current-${currentQuestionId}`}
+          layoutId={`card-${currentQuestionId}`}
           className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-xl"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={transition}
         >
-          <Card className="min-h-[450px] p-8">
-            <h2 className="text-2xl font-bold mb-6">
-              {questions[currentIndex].title}
+          <Card className="min-h-[300px] p-6 flex flex-col gap-4">
+            <h2 className="text-xl font-semibold">
+              {currentQuestion.title}
             </h2>
-            <p className="text-lg text-muted-foreground mb-8">
-              {questions[currentIndex].instructions}
-            </p>
+            {currentQuestion.instructions && (
+              <p className="text-sm text-muted-foreground">{currentQuestion.instructions}</p>
+            )}
+            <div className="flex-1 flex flex-col justify-center">
+              {currentQuestion.questionType === IncytesQuestionType.SingleValue && (
+                <MultipleChoiceSingleValueQuestionBody
+                  question={currentQuestion as IncytesSingleValueQuestionModel}
+                />
+              )}
+            </div>
           </Card>
         </motion.div>
 
         {/* Next card */}
         <AnimatePresence mode="popLayout">
-          {currentIndex < questions.length - 1 && (
+          {nextQuestion && (
             <motion.div
-              key={`next-${questions[currentIndex + 1].sortOrder}`}
-              layoutId={`card-${questions[currentIndex + 1].sortOrder}`}
+              key={`next-${nextQuestionId}`}
+              layoutId={`card-${nextQuestionId}`}
               className="absolute right-0 top-1/2 -translate-y-1/2 w-80 h-64 bg-muted rounded-lg overflow-hidden"
               initial={{ opacity: 0, x: 100 }}
               animate={{ opacity: 0.6, x: 0 }}
@@ -163,23 +186,24 @@ export const ReportQuestionsView: React.FC = () => {
           )}
         </AnimatePresence>
       </div>
-      <div className="absolute w-full max-w-xl left-1/2 -translate-x-1/2 bottom-[160px] flex flex-row justify-between items-center">
+      <div className="absolute w-full max-w-xl left-1/2 -translate-x-1/2 bottom-[100px] flex flex-row justify-between items-center gap-1">
         <Button
+          variant={"outline"}
+          className="h-14 w-36 flex flex-row justify-between items-center"
           onClick={onPrevClicked}
-          disabled={currentIndex === 0}
+          disabled={isFirstQuestion}
         >
-          Previous
+          <Kbd>←</Kbd>
+          <span>Previous</span>
         </Button>
 
-        {currentIndex === questions.length - 1 ? (
-          <Button onClick={onFinishClicked}>
-            Finish
-          </Button>
-        ) : (
-          <Button onClick={onNextClicked}>
-            Next
-          </Button>
-        )}
+        <Button
+          className="h-14 w-36 flex flex-row justify-between items-center"
+          onClick={isLastQuestion ? onFinishClicked : onNextClicked}
+        >
+          <span>{isLastQuestion ? "Finish" : "Next"}</span>
+          <Kbd className="bg-muted/40 text-primary">→</Kbd>
+        </Button>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import type { IncytesAnsweredQuestionsModel, IncytesUserModel, IncytesVerifyPhoneModel, IncytesUserRegistrationStatus } from "../incytes";
+import type { IncytesAnsweredQuestionsModel, IncytesUserModel } from "../incytes";
 
 export interface IncytesResponseModel {
   isSuccessful: boolean;
@@ -17,13 +17,32 @@ export interface IncytesPatientAuthenticationResponseModel extends IncytesRespon
   isUserConfirmed: boolean;
   user: IncytesUserModel;
   redirectTo: string;
-  verifyPhone: IncytesVerifyPhoneModel;
   linkExpired: boolean;
 }
 
-export interface IncytesUserRegistrationStatusResponseModel extends IncytesResponseModel {
-  registrationStatus: IncytesUserRegistrationStatus
+export interface IncytesPatientSurveyNavigationModel extends IncytesResponseModel {
+  caseId: number;
+  circleName: string;
+  surveyId: number;
+  surveyInstanceId: number;
+  protocolId: number;
+  protocolName: string;
+  surveyTitle: string;
+  dueUnit: number;
+  dueValue: number;
+  expiresUtc: string;
+  dueDate: string;
+  surveyIsCompleted: boolean;
+
+  nextCaseId: number;
+  nextCircleName: string;
+  nextSurveyId: number;
+  nextSurveyInstanceId: number;
+  nextProtocolId: number;
+  nextProtocolName: string;
+  nextSurveyTitle: string;
+  nextDueUnit: number;
+  nextDueValue: number;
+  nextExpiresUtc: string;
+  nextDueDate: string;
 }
-
-export interface IncytesConfirmUserRegistrationResponseModel extends IncytesResponseModel {}
-

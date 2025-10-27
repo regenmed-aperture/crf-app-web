@@ -1,4 +1,4 @@
-import type { IncytesAnsweredQuestionsModel } from "../incytes";
+import type { IncytesAnsweredQuestionsModel, IncytesUserModel } from "../incytes";
 
 export interface IncytesResponseModel {
   isSuccessful: boolean;
@@ -10,4 +10,39 @@ export interface IncytesResponseModel {
 
 export interface IncytesBilateralQuestionCollectionResponseModel extends IncytesResponseModel {
   answeredQuestions: IncytesAnsweredQuestionsModel[];
+}
+
+/** User registration response data */
+export interface IncytesPatientAuthenticationResponseModel extends IncytesResponseModel {
+  isUserConfirmed: boolean;
+  user: IncytesUserModel;
+  redirectTo: string;
+  linkExpired: boolean;
+}
+
+export interface IncytesPatientSurveyNavigationModel extends IncytesResponseModel {
+  caseId: number;
+  circleName: string;
+  surveyId: number;
+  surveyInstanceId: number;
+  protocolId: number;
+  protocolName: string;
+  surveyTitle: string;
+  dueUnit: number;
+  dueValue: number;
+  expiresUtc: string;
+  dueDate: string;
+  surveyIsCompleted: boolean;
+
+  nextCaseId: number;
+  nextCircleName: string;
+  nextSurveyId: number;
+  nextSurveyInstanceId: number;
+  nextProtocolId: number;
+  nextProtocolName: string;
+  nextSurveyTitle: string;
+  nextDueUnit: number;
+  nextDueValue: number;
+  nextExpiresUtc: string;
+  nextDueDate: string;
 }

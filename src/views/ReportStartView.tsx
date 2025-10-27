@@ -2,44 +2,87 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { useAppDispatch } from "@/store/hooks";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { fetchPatientReportData } from "@/store/slices/reportStateSlice";
 import { setCurrentView, UIView } from "@/store/slices/uiStateSlice";
+import { getSectionBorderTWClass } from "@/util/colors";
 import { CheckCircle2, ChevronRight, Circle, CircleQuestionMark, Clock, ListOrdered, TrendingUp } from "lucide-react";
 import type React from "react";
+import { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 
-export const ReportLandingPageView: React.FC = () => {
+const REPORT_ID_URL_KEY_NAME = "id"
+
+export const ReportStartView: React.FC = () => {
   const dispatch = useAppDispatch();
-  
+  const [ params ] = useSearchParams();
+  const reportState = useAppSelector(state => state.reportState);
+
   const onBeginPressed = () => {
     dispatch(setCurrentView(UIView.VIEW_CONSENT));
+  }
+
+  useEffect(() => {
+    const reportId = params.get(REPORT_ID_URL_KEY_NAME);
+    const isValidId = params.has(REPORT_ID_URL_KEY_NAME) && reportId?.trim() !== "";
+
+    if (isValidId) {
+      // TODO: prompt user before deleting all data from previous report?
+      dispatch(fetchPatientReportData(reportId as string));
+    } else {
+      dispatch(setCurrentView(UIView.VIEW_NOT_FOUND));
+    }
+  }, [params])
+
+  // display a simple skeleton while loading survey
+  if (reportState.isFetchingData) {
+    return (
+      <div className="w-full h-full flex flex-row justify-center items-center">
+        <div className="w-full max-w-5xl flex flex-col gap-10">
+          <Skeleton className="h-8 w-64" />
+          <div className="flex flex-row gap-8">
+            <div className="flex-1 flex flex-col gap-4">
+              <Skeleton className="h-[442px] w-full rounded-lg" />
+            </div>
+            <div className="w-80 flex flex-col gap-4">
+              <Skeleton className="h-6 w-24" />
+              <Skeleton className="h-14 w-full rounded-lg" />
+              <Skeleton className="h-14 w-full rounded-lg" />
+              <Skeleton className="h-14 w-full rounded-lg" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="w-full h-full flex flex-row justify-center items-center">
       <div className="w-full max-w-5xl flex flex-col justify-center gap-10">
         <div className="flex flex-row justify-between">
-          <h1 className="text-2xl">Welcome, <b>Gleb</b></h1>
+          <h1 className="text-2xl">Welcome, <b>{reportState.user?.firstName}</b></h1>
           <Button variant="secondary">
             <CircleQuestionMark /> Help
           </Button>
         </div>
-        <div className="flex flex-row gap-8">
-          <Card className="flex-1 py-4 gap-4">
+        <div className="flex flex-row gap-8 items-start min-h-0">
+          <Card className="flex-1 py-4 gap-4 min-h-0">
             <CardHeader className="px-4 flex flex-col gap-4">
               <div className="flex w-full flex-row justify-between">
                 <div className="flex flex-col">
                   <p className="text-sm/4">Let's complete your</p>
-                  <h2 className="text-xl font-bold">Knee surgery - 60 day check-in</h2>
+                  <h2 className="text-xl font-bold">{reportState.displayTitle}</h2>
                 </div>
                 <Badge variant="secondary" className="flex flex-row items-center gap-2 h-6">
                   <div className="flex flex-row items-center gap-1">
                     <ListOrdered size={16} />
-                    <p>23 questions</p>
+                    <p>{Object.keys(reportState.questions).length} questions</p>
                   </div>
                   <Separator orientation="vertical" className="h-4!" />
                   <div className="flex flex-row items-center gap-1">
                     <Clock size={16} />
-                    <p>10 min</p>
+                    <p>{Math.floor(reportState.remainingSecondsToCompleteEstimate / 60)} min</p>
                   </div>
                 </Badge>
               </div>
@@ -116,30 +159,13 @@ export const ReportLandingPageView: React.FC = () => {
           </Card>
           <div className="flex flex-col gap-4 w-80">
             <h2 className="font-semibold">Sections</h2>
-            <div className="flex flex-col gap-3">
-              <div className="border-l-3 border-1 border-l-red-400 rounded-lg rounded-tl-none rounded-bl-none bg-white p-4">
-                <div className="flex flex-row items-center justify-between mb-2">
-                  <h3 className="text-lg font-semibold">Pain & Mobility</h3>
-                  <Badge variant="secondary">8 questions</Badge>
+            <div className="flex flex-col gap-3 overflow-y-auto max-h-[400px]">
+              {reportState.sections.map((section) => (
+                <div key={section.id} className={`border-l-3 border-1 ${getSectionBorderTWClass(section.color)} rounded-lg rounded-tl-none rounded-bl-none bg-white p-4 flex flex-row items-center justify-between`}>
+                  <h3 className="text-lg font-semibold">{section.name}</h3>
+                  <Badge variant="secondary">{section.questionIds.length} questions</Badge>
                 </div>
-                <p className="text-sm text-muted-foreground">Daily activities, pain levels, range of motion</p>
-              </div>
-
-              <div className="border-l-3 border-1 border-l-green-400 rounded-lg rounded-tl-none rounded-bl-none bg-white p-4">
-                <div className="flex flex-row items-center justify-between mb-2">
-                  <h3 className="text-lg font-semibold">Recovery Progress</h3>
-                  <Badge variant="secondary">7 questions</Badge>
-                </div>
-                <p className="text-sm text-muted-foreground">Physical therapy, healing timeline, milestones</p>
-              </div>
-
-              <div className="border-l-3 border-1 border-l-blue-400 rounded-lg rounded-tl-none rounded-bl-none bg-white p-4">
-                <div className="flex flex-row items-center justify-between mb-2">
-                  <h3 className="text-lg font-semibold">Quality of Life</h3>
-                  <Badge variant="secondary">8 questions</Badge>
-                </div>
-                <p className="text-sm text-muted-foreground">Sleep quality, mental health, daily routines</p>
-              </div>
+              ))}
             </div>
           </div>
         </div>

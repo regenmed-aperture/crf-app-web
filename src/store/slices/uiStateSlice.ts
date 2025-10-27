@@ -1,10 +1,11 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import { fetchReportData } from "./reportStateSlice";
+import { initializePatientReportSession } from "./reportStateSlice";
 
 const SLICE_NAME = 'uiState';
 
 export enum UIView {
-  VIEW_LANDING,
+  VIEW_AUTH,
+  VIEW_START,
   VIEW_CONSENT,
   VIEW_QUESTIONS,
   VIEW_RESULTS,
@@ -19,7 +20,7 @@ export interface UIState {
 }
 
 const initialState: UIState = {
-  currentView: UIView.VIEW_LANDING,
+  currentView: UIView.VIEW_AUTH,
   currentSectionId: null,
   currentQuestionId: null,
 };
@@ -40,14 +41,11 @@ export const uiStateSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchReportData.fulfilled, (state) => {
-        state.currentView = UIView.VIEW_LANDING;
+      .addCase(initializePatientReportSession.fulfilled, (state) => {
+        state.currentView = UIView.VIEW_START;
         state.currentSectionId = null;
         state.currentQuestionId = null;
       })
-      .addCase(fetchReportData.rejected, (state) => {
-        state.currentView = UIView.VIEW_NOT_FOUND;
-      });
   },
 });
 

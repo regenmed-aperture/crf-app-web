@@ -1,0 +1,43 @@
+import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import type { IncytesDateQuestionModel } from "@/models/incytes";
+import type React from "react";
+import { useState } from "react";
+
+interface Props {
+  question: IncytesDateQuestionModel;
+  onAnswerChange?: (value: string) => void;
+}
+
+export const DateQuestionBody: React.FC<Props> = ({
+  question,
+  onAnswerChange,
+}) => {
+  const [dateValue, setDateValue] = useState<string>(question.value || "");
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setDateValue(value);
+    onAnswerChange?.(value);
+  };
+
+  return (
+    <div className="flex flex-col gap-4 w-full">
+      <div className="relative">
+        <Input
+          type="date"
+          value={dateValue}
+          onChange={handleChange}
+          className={cn(
+            "w-full h-14 px-4 text-base",
+            "border-2 rounded-lg",
+            "focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2",
+            dateValue
+              ? "border-primary bg-primary/5"
+              : "border-border bg-card"
+          )}
+        />
+      </div>
+    </div>
+  );
+};

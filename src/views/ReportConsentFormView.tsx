@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Kbd } from "@/components/ui/kbd";
 import { Separator } from "@/components/ui/separator";
 import { useAppDispatch } from "@/store/hooks";
 import { setCurrentView, UIView } from "@/store/slices/uiStateSlice";
@@ -78,11 +79,20 @@ export const ReportConsentFormView: React.FC = () => {
 
           <CardFooter className="px-4">
             <div className="w-full flex flex-row justify-between gap-4">
-              <Button variant="outline" className="flex-1">
-                I do not consent
+              <Button
+                variant="outline"
+                className="flex-1 flex flex-row justify-center items-center gap-2"
+                onClick={onConsentGranted}
+              >
+                <span>I do not consent</span>
+                <Kbd className="bg-muted/40 text-primary">Esc</Kbd>
               </Button>
-              <Button className="flex-1" onClick={onConsentGranted}>
-                I consent to participate
+              <Button
+                className="flex-1 flex flex-row justify-center items-center gap-2"
+                onClick={onConsentGranted}
+              >
+                <span>I consent to participate</span>
+                <Kbd className="bg-muted/40 text-primary">⏎</Kbd>
               </Button>
             </div>
           </CardFooter>

@@ -1,13 +1,14 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Kbd } from "@/components/ui/kbd";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchPatientReportData } from "@/store/slices/reportStateSlice";
 import { setCurrentView, UIView } from "@/store/slices/uiStateSlice";
 import { getSectionBorderTWClass } from "@/util/colors";
-import { CheckCircle2, ChevronRight, Circle, CircleQuestionMark, Clock, ListOrdered, TrendingUp } from "lucide-react";
+import { CheckCircle2, Circle, CircleQuestionMark, Clock, ListOrdered, TrendingUp } from "lucide-react";
 import type React from "react";
 import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -16,7 +17,7 @@ const REPORT_ID_URL_KEY_NAME = "id"
 
 export const ReportStartView: React.FC = () => {
   const dispatch = useAppDispatch();
-  const [ params ] = useSearchParams();
+  const [params] = useSearchParams();
   const reportState = useAppSelector(state => state.reportState);
 
   const onBeginPressed = () => {
@@ -154,22 +155,28 @@ export const ReportStartView: React.FC = () => {
             <Separator />
             <CardFooter className="px-4 justify-between">
               <Button variant="link">Cancel & Withdraw Consent</Button>
-              <Button onClick={onBeginPressed}>Begin <ChevronRight /></Button>
-            </CardFooter>
-          </Card>
-          <div className="flex flex-col gap-4 w-80">
-            <h2 className="font-semibold">Sections</h2>
-            <div className="flex flex-col gap-3 overflow-y-auto max-h-[400px]">
-              {reportState.sections.map((section) => (
-                <div key={section.id} className={`border-l-3 border-1 ${getSectionBorderTWClass(section.color)} rounded-lg rounded-tl-none rounded-bl-none bg-white p-4 flex flex-row items-center justify-between`}>
-                  <h3 className="text-lg font-semibold">{section.name}</h3>
-                  <Badge variant="secondary">{section.questionIds.length} questions</Badge>
-                </div>
-              ))}
-            </div>
+              <Button
+                className="flex flex-row justify-center items-center gap-2"
+                onClick={onBeginPressed}
+              >
+                <span>Begin</span>
+                <Kbd className="bg-muted/40 text-primary">⏎</Kbd>
+              </Button>
+          </CardFooter>
+        </Card>
+        <div className="flex flex-col gap-4 w-80">
+          <h2 className="font-semibold">Sections</h2>
+          <div className="flex flex-col gap-3 overflow-y-auto max-h-[400px]">
+            {reportState.sections.map((section) => (
+              <div key={section.id} className={`border-l-3 border-1 ${getSectionBorderTWClass(section.color)} rounded-lg rounded-tl-none rounded-bl-none bg-white p-4 flex flex-row items-center justify-between`}>
+                <h3 className="text-lg font-semibold">{section.name}</h3>
+                <Badge variant="secondary">{section.questionIds.length} questions</Badge>
+              </div>
+            ))}
           </div>
         </div>
       </div>
     </div>
+    </div >
   )
 };

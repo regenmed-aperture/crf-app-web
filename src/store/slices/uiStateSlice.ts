@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import { initializePatientReportSession } from "./reportStateSlice";
+import { fetchPatientReportData, initializePatientReportSession } from "./reportStateSlice";
 
 const SLICE_NAME = 'uiState';
 
@@ -32,10 +32,10 @@ export const uiStateSlice = createSlice({
     setCurrentView(state, action: PayloadAction<UIView>) {
       state.currentView = action.payload;
     },
-    setCurrentSectionId(state, action: PayloadAction<string>) {
+    setCurrentSectionId(state, action: PayloadAction<string|null>) {
       state.currentSectionId = action.payload;
     },
-    setCurrentQuestionId(state, action: PayloadAction<string>) {
+    setCurrentQuestionId(state, action: PayloadAction<string|null>) {
       state.currentQuestionId = action.payload;
     },
   },
@@ -43,8 +43,11 @@ export const uiStateSlice = createSlice({
     builder
       .addCase(initializePatientReportSession.fulfilled, (state) => {
         state.currentView = UIView.VIEW_START;
-        state.currentSectionId = null;
-        state.currentQuestionId = null;
+      })
+      .addCase(fetchPatientReportData.fulfilled, (state) => {
+        if (state.currentQuestionId) {
+          state.currentView = UIView.VIEW_QUESTIONS;
+        }
       })
   },
 });

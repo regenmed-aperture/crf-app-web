@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { setCurrentView, UIView } from "../store/slices/uiStateSlice";
+import { AnimatePresence, motion } from "framer-motion";
 
 import { ReportStartView } from "../views/ReportStartView";
 import { ReportConsentFormView } from "../views/ReportConsentFormView";
@@ -26,19 +27,39 @@ export const ReportRoute: React.FC = () => {
     }
   }, [ dispatch ])
 
-  switch (currentView) {
-    case UIView.VIEW_AUTH:
-      return <ReportAuthView />;
-    case UIView.VIEW_START:
-      return <ReportStartView />;
-    case UIView.VIEW_CONSENT:
-      return <ReportConsentFormView />;
-    case UIView.VIEW_QUESTIONS:
-      return <ReportQuestionsView />;
-    case UIView.VIEW_RESULTS:
-      return <ReportResultsView />;
-    case UIView.VIEW_NOT_FOUND:
-    default:
-      return <ReportNotFoundView />; 
-  }
+  const getViewComponent = () => {
+    switch (currentView) {
+      case UIView.VIEW_AUTH:
+        return <ReportAuthView />;
+      case UIView.VIEW_START:
+        return <ReportStartView />;
+      case UIView.VIEW_CONSENT:
+        return <ReportConsentFormView />;
+      case UIView.VIEW_QUESTIONS:
+        return <ReportQuestionsView />;
+      case UIView.VIEW_RESULTS:
+        return <ReportResultsView />;
+      case UIView.VIEW_NOT_FOUND:
+      default:
+        return <ReportNotFoundView />;
+    }
+  };
+
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={currentView}
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -20 }}
+        transition={{
+          duration: 0.1,
+          ease: "easeInOut"
+        }}
+        className="w-full h-full"
+      >
+        {getViewComponent()}
+      </motion.div>
+    </AnimatePresence>
+  );
 }

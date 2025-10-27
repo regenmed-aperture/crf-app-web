@@ -1,73 +1,81 @@
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { SectionedProgressBar } from "@/components/SectionedProgressBar";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setCurrentView, setCurrentSectionId, setCurrentQuestionId, UIView } from "@/store/slices/uiStateSlice";
 import { motion, AnimatePresence, type Transition } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type React from "react";
 import { MultipleChoiceSingleValueQuestionBody } from "@/components/questions/MultipleChoiceSingleValueQuestionBody";
-import { IncytesQuestionType, type IncytesSingleValueQuestionModel } from "@/models/incytes";
+import { IncytesQuestionType, type IncytesAnalogQuestionModel, type IncytesDateQuestionModel, type IncytesMultipleValueQuestionModel, type IncytesSingleValueQuestionModel } from "@/models/incytes";
 import { Kbd } from "@/components/ui/kbd";
+import { SliderQuestionBody } from "@/components/questions/SliderQuestionBody";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Info } from "lucide-react";
+import { DateQuestionBody } from "@/components/questions/DateQuestionBody";
+import { MultipleChoiceMultipleValueQuestionBody } from "@/components/questions/MultipleChoiceMultipleValueQuestionBody";
+import { Separator } from "@/components/ui/separator";
 
 export const ReportQuestionsView: React.FC = () => {
   const dispatch = useAppDispatch();
   const reportState = useAppSelector(state => state.reportState);
+  const uiState = useAppSelector(state => state.uiState);
 
-  // Initialize to first section and first question if not set
-  const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
-  const [currentQuestionIndexInSection, setCurrentQuestionIndexInSection] = useState(0);
+  // Build flat list of all question IDs in order
+  const allQuestionIds = useMemo(
+    () => reportState.sections.flatMap(s => s.questionIds),
+    [reportState.sections]
+  );
 
-  // Get current section and question
-  const currentSection = reportState.sections[currentSectionIndex];
-  const currentQuestionId = currentSection?.questionIds[currentQuestionIndexInSection];
+  // Simple index state - just track position in the flat list
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Restore position on mount
+  useEffect(() => {
+    if (uiState.currentQuestionId && allQuestionIds.length > 0) {
+      const questionId = Number(uiState.currentQuestionId);
+      const index = allQuestionIds.indexOf(questionId);
+      if (index !== -1) {
+        setCurrentIndex(index);
+      }
+    }
+  }, []);
+
+  // Get current question
+  const currentQuestionId = allQuestionIds[currentIndex];
   const currentQuestion = currentQuestionId ? reportState.questions[currentQuestionId] : null;
 
-  // Calculate total question index for progress bar
-  const currentQuestionGlobalIndex = reportState.sections
-    .slice(0, currentSectionIndex)
-    .reduce((sum, section) => sum + section.questionIds.length, 0) + currentQuestionIndexInSection;
+  // Find which section we're in (for display only)
+  const currentSection = useMemo(() => {
+    return reportState.sections.find(s => s.questionIds.includes(currentQuestionId));
+  }, [reportState.sections, currentQuestionId]);
 
-  const totalQuestions = reportState.sections.reduce((sum, section) => sum + section.questionIds.length, 0);
-
-  // Update uiStore whenever current question changes
+  // Save to Redux whenever position changes
   useEffect(() => {
     if (currentSection && currentQuestionId) {
       dispatch(setCurrentSectionId(String(currentSection.id)));
       dispatch(setCurrentQuestionId(String(currentQuestionId)));
     }
-  }, [currentSectionIndex, currentQuestionIndexInSection, currentSection, currentQuestionId, dispatch]);
+  }, [currentQuestionId, currentSection, dispatch]);
 
+  // Navigation handlers
   const onNextClicked = () => {
-    if (!currentSection) return;
-
-    // Check if there's a next question in current section
-    if (currentQuestionIndexInSection < currentSection.questionIds.length - 1) {
-      setCurrentQuestionIndexInSection(prev => prev + 1);
-    }
-    // Move to next section
-    else if (currentSectionIndex < reportState.sections.length - 1) {
-      setCurrentSectionIndex(prev => prev + 1);
-      setCurrentQuestionIndexInSection(0);
+    if (currentIndex < allQuestionIds.length - 1) {
+      setCurrentIndex(prev => prev + 1);
     }
   };
 
   const onPrevClicked = () => {
-    // Check if there's a previous question in current section
-    if (currentQuestionIndexInSection > 0) {
-      setCurrentQuestionIndexInSection(prev => prev - 1);
-    }
-    // Move to previous section
-    else if (currentSectionIndex > 0) {
-      setCurrentSectionIndex(prev => prev - 1);
-      const prevSection = reportState.sections[currentSectionIndex - 1];
-      setCurrentQuestionIndexInSection(prevSection.questionIds.length - 1);
+    if (currentIndex > 0) {
+      setCurrentIndex(prev => prev - 1);
     }
   };
 
   const onFinishClicked = () => {
     dispatch(setCurrentView(UIView.VIEW_RESULTS));
-  }
+    dispatch(setCurrentQuestionId(null));
+    dispatch(setCurrentSectionId(null));
+  };
 
   const transition: Transition = {
     type: "tween",
@@ -75,12 +83,17 @@ export const ReportQuestionsView: React.FC = () => {
     ease: [0.4, 0, 0.2, 1],
   };
 
-  const isFirstQuestion = currentSectionIndex === 0 && currentQuestionIndexInSection === 0;
-  const isLastQuestion =
-    currentSectionIndex === reportState.sections.length - 1 &&
-    currentQuestionIndexInSection === currentSection?.questionIds.length - 1;
+  // Simple boundary checks
+  const isFirstQuestion = currentIndex === 0;
+  const isLastQuestion = currentIndex === allQuestionIds.length - 1;
 
-  if (totalQuestions === 0 || !currentQuestion) {
+  // Get adjacent questions for preview
+  const prevQuestionId = currentIndex > 0 ? allQuestionIds[currentIndex - 1] : null;
+  const nextQuestionId = currentIndex < allQuestionIds.length - 1 ? allQuestionIds[currentIndex + 1] : null;
+  const prevQuestion = prevQuestionId ? reportState.questions[prevQuestionId] : null;
+  const nextQuestion = nextQuestionId ? reportState.questions[nextQuestionId] : null;
+
+  if (allQuestionIds.length === 0 || !currentQuestion) {
     return (
       <div className="w-full h-full flex justify-center items-center">
         <p className="text-muted-foreground">No questions available</p>
@@ -88,39 +101,13 @@ export const ReportQuestionsView: React.FC = () => {
     );
   }
 
-  // Get previous and next question IDs for preview cards
-  const getPrevQuestionId = (): number | null => {
-    if (currentQuestionIndexInSection > 0) {
-      return currentSection.questionIds[currentQuestionIndexInSection - 1];
-    } else if (currentSectionIndex > 0) {
-      const prevSection = reportState.sections[currentSectionIndex - 1];
-      return prevSection.questionIds[prevSection.questionIds.length - 1];
-    }
-    return null;
-  };
-
-  const getNextQuestionId = (): number | null => {
-    if (currentQuestionIndexInSection < currentSection.questionIds.length - 1) {
-      return currentSection.questionIds[currentQuestionIndexInSection + 1];
-    } else if (currentSectionIndex < reportState.sections.length - 1) {
-      const nextSection = reportState.sections[currentSectionIndex + 1];
-      return nextSection.questionIds[0];
-    }
-    return null;
-  };
-
-  const prevQuestionId = getPrevQuestionId();
-  const nextQuestionId = getNextQuestionId();
-  const prevQuestion = prevQuestionId ? reportState.questions[prevQuestionId] : null;
-  const nextQuestion = nextQuestionId ? reportState.questions[nextQuestionId] : null;
-
   return (
     <div className="w-full h-full flex justify-center items-center relative overflow-hidden">
       <div className="absolute w-full top-[40px] flex flex-col items-center px-8 gap-6">
         <SectionedProgressBar
           sections={reportState.sections}
-          currentQuestionIndex={currentQuestionGlobalIndex}
-          totalQuestions={totalQuestions}
+          currentQuestionIndex={currentIndex}
+          totalQuestions={allQuestionIds.length}
           className="max-w-[800px]"
         />
         <h3 className="text-lg font-semibold">
@@ -152,20 +139,42 @@ export const ReportQuestionsView: React.FC = () => {
           animate={{ opacity: 1 }}
           transition={transition}
         >
-          <Card className="min-h-[300px] p-6 flex flex-col gap-4">
-            <h2 className="text-xl font-semibold">
-              {currentQuestion.title}
-            </h2>
-            {currentQuestion.instructions && (
-              <p className="text-sm text-muted-foreground">{currentQuestion.instructions}</p>
-            )}
-            <div className="flex-1 flex flex-col justify-center">
-              {currentQuestion.questionType === IncytesQuestionType.SingleValue && (
-                <MultipleChoiceSingleValueQuestionBody
-                  question={currentQuestion as IncytesSingleValueQuestionModel}
-                />
+          <Card className="min-h-[300px] py-4 flex flex-col gap-4">
+            <CardHeader className="px-4 flex flex-col gap-4">
+              <h2 className="text-xl">
+                {currentQuestion.title}
+              </h2>
+            </CardHeader>
+            <Separator />
+            <CardContent className="px-4 flex flex-col gap-3 flex-1">
+              {currentQuestion.instructions && (
+                <Alert>
+                  <Info />
+                  <AlertDescription>
+                    {currentQuestion.instructions}
+                  </AlertDescription>
+                </Alert>
               )}
-            </div>
+              <div className="flex-1 flex flex-col justify-center">
+                {currentQuestion.questionType === IncytesQuestionType.SingleValue ? (
+                  <MultipleChoiceSingleValueQuestionBody
+                    question={currentQuestion as IncytesSingleValueQuestionModel}
+                  />
+                ) : currentQuestion.questionType === IncytesQuestionType.Analog ? (
+                  <SliderQuestionBody
+                    question={currentQuestion as IncytesAnalogQuestionModel}
+                  />
+                ) : currentQuestion.questionType === IncytesQuestionType.Date ? (
+                  <DateQuestionBody
+                    question={currentQuestion as IncytesDateQuestionModel}
+                  />
+                ) : currentQuestion.questionType === IncytesQuestionType.MultipleValue ? (
+                  <MultipleChoiceMultipleValueQuestionBody
+                    question={currentQuestion as IncytesMultipleValueQuestionModel}
+                  />
+                ) : null}
+              </div>
+            </CardContent>
           </Card>
         </motion.div>
 
@@ -187,7 +196,7 @@ export const ReportQuestionsView: React.FC = () => {
       <div className="absolute w-full max-w-xl left-1/2 -translate-x-1/2 bottom-[100px] flex flex-row justify-between items-center gap-1">
         <Button
           variant={"outline"}
-          className="h-14 w-36 flex flex-row justify-between items-center"
+          className="h-12 w-36 flex flex-row justify-between items-center"
           onClick={onPrevClicked}
           disabled={isFirstQuestion}
         >
@@ -196,7 +205,7 @@ export const ReportQuestionsView: React.FC = () => {
         </Button>
 
         <Button
-          className="h-14 w-36 flex flex-row justify-between items-center"
+          className="h-12 w-36 flex flex-row justify-between items-center"
           onClick={isLastQuestion ? onFinishClicked : onNextClicked}
         >
           <span>{isLastQuestion ? "Finish" : "Next"}</span>

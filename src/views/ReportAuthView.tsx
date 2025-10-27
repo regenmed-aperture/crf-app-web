@@ -5,11 +5,12 @@ import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { initializePatientReportSession } from "@/store/slices/reportStateSlice";
+import { Check } from "lucide-react";
 import React, { useState } from "react";
 
 export const ReportAuthView: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { isFetchingData } = useAppSelector(state => state.reportState);
+  const { isFetchingData, user } = useAppSelector(state => state.reportState);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,6 +28,15 @@ export const ReportAuthView: React.FC = () => {
         <p className="text-sm text-muted-foreground">authenticating...</p>
       </div>
     );
+  } else if (!!user) {
+    // this is mainly to help with the slide-out animation. without this we'd have a flicker
+    // of the sign in form for a brief moment which doesnt look good
+    return (
+      <div className="w-full h-full flex flex-col justify-center items-center gap-4">
+        <Check className="size-6" />
+        <p className="text-sm text-muted-foreground">authenticated</p>
+      </div>
+    )
   }
 
   return (

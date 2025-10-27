@@ -9,17 +9,10 @@ import type React from "react";
 import { MultipleChoiceSingleValueQuestionBody } from "@/components/questions/MultipleChoiceSingleValueQuestionBody";
 import { IncytesQuestionType, type IncytesAnalogQuestionModel, type IncytesDateQuestionModel, type IncytesMultipleValueQuestionModel, type IncytesSingleValueQuestionModel } from "@/models/incytes";
 import { Kbd } from "@/components/ui/kbd";
-import { SliderQuestionBody } from "@/components/questions/SliderQuestionBody";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Info } from "lucide-react";
-import { DateQuestionBody } from "@/components/questions/DateQuestionBody";
-import { MultipleChoiceMultipleValueQuestionBody } from "@/components/questions/MultipleChoiceMultipleValueQuestionBody";
-import { Separator } from "@/components/ui/separator";
 
 export const ReportQuestionsView: React.FC = () => {
   const dispatch = useAppDispatch();
   const reportState = useAppSelector(state => state.reportState);
-  const uiState = useAppSelector(state => state.uiState);
 
   // Build flat list of all question IDs in order
   const allQuestionIds = useMemo(

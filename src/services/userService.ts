@@ -1,7 +1,5 @@
 import type { IncytesPatientAuthenticationResponseModel } from "@/models/dto/incytes";
 
-const BASE_URL = "https://demo-patient.incytesapp.co";
-
 export const userService = {
   async signIn(email: string, password: string): Promise<IncytesPatientAuthenticationResponseModel> {
     const response = await fetch(`/api/authorization`, {

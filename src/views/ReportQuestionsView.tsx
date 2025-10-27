@@ -9,12 +9,10 @@ import type React from "react";
 import { MultipleChoiceSingleValueQuestionBody } from "@/components/questions/MultipleChoiceSingleValueQuestionBody";
 import { IncytesQuestionType, type IncytesSingleValueQuestionModel } from "@/models/incytes";
 import { Kbd } from "@/components/ui/kbd";
-import { getBgColorTWClass } from "@/util/colors";
 
 export const ReportQuestionsView: React.FC = () => {
   const dispatch = useAppDispatch();
   const reportState = useAppSelector(state => state.reportState);
-  const uiState = useAppSelector(state => state.uiState);
 
   // Initialize to first section and first question if not set
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);

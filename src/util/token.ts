@@ -5,6 +5,13 @@ export interface ReportTokenData {
   languageId: string;
 }
 
+export const encodeReportToken = (data: ReportTokenData): string => {
+  return btoa(JSON.stringify(data))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+};
+
 export const decodeReportToken = (token: string): ReportTokenData => {
   try {
     const base64 = token

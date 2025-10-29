@@ -47,6 +47,26 @@ export function getSectionBorderTWClass(color: string): string {
   return colorMap[color] || 'border-l-gray-400';
 }
 
+// RGB values for Tailwind 400 colors (used for backgrounds and glows)
+const COLOR_RGB_VALUES: Record<string, string> = {
+  red: "248, 113, 113",
+  orange: "251, 146, 60",
+  amber: "251, 191, 36",
+  lime: "163, 230, 53",
+  green: "74, 222, 128",
+  emerald: "52, 211, 153",
+  teal: "45, 212, 191",
+  cyan: "34, 211, 238",
+  sky: "56, 189, 248",
+  blue: "96, 165, 250",
+  indigo: "129, 140, 248",
+  violet: "167, 139, 250",
+  purple: "192, 132, 252",
+  fuchsia: "232, 121, 249",
+  pink: "244, 114, 182",
+  rose: "251, 113, 133",
+};
+
 export function getBgColorTWClass(color: string): string {
   const colorMap: Record<string, string> = {
     red: "bg-red-400",
@@ -68,5 +88,10 @@ export function getBgColorTWClass(color: string): string {
   };
 
   return colorMap[color] || "bg-gray-400";
+}
+
+export function getGlowShadowStyle(color: string): string {
+  const rgb = COLOR_RGB_VALUES[color] || "156, 163, 175";
+  return `0 0 30px rgba(${rgb}, 0.2), 0 0 60px rgba(${rgb}, 0.1)`;
 }
 

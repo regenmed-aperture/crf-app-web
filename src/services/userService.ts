@@ -2,7 +2,7 @@ import type { IncytesPatientAuthenticationResponseModel } from "@/models/dto/inc
 
 export const userService = {
   async signIn(email: string, password: string): Promise<IncytesPatientAuthenticationResponseModel> {
-    const response = await fetch(`/api/authorization`, {
+    const response = await fetch("/api/authorization", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

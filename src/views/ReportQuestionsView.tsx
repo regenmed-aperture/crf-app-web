@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { SectionedProgressBar } from "@/components/SectionedProgressBar";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setCurrentView, setCurrentSectionId, setCurrentQuestionId, UIView } from "@/store/slices/uiStateSlice";
 import { motion, AnimatePresence, type Transition } from "framer-motion";
@@ -15,6 +14,8 @@ import { Info } from "lucide-react";
 import { DateQuestionBody } from "@/components/questions/DateQuestionBody";
 import { MultipleChoiceMultipleValueQuestionBody } from "@/components/questions/MultipleChoiceMultipleValueQuestionBody";
 import { Separator } from "@/components/ui/separator";
+import { QuestionsTopIsland } from "@/components/QuestionsTopIsland";
+import { getGlowShadowStyle } from "@/util/colors";
 
 export const ReportQuestionsView: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -103,16 +104,12 @@ export const ReportQuestionsView: React.FC = () => {
 
   return (
     <div className="w-full h-full flex justify-center items-center relative overflow-hidden">
-      <div className="absolute w-full top-[40px] flex flex-col items-center px-8 gap-6">
-        <SectionedProgressBar
-          sections={reportState.sections}
-          currentQuestionIndex={currentIndex}
-          totalQuestions={allQuestionIds.length}
-          className="max-w-[800px]"
+      <div className="absolute w-full top-[40px] px-8 flex justify-center">
+        <QuestionsTopIsland
+          currentQuetionIndex={currentIndex}
+          totalQuestionsNum={allQuestionIds.length}
+          currentSection={currentSection}
         />
-        <h3 className="text-lg font-semibold">
-          {currentSection?.name}
-        </h3>
       </div>
       <div className="w-full max-w-[1500px]">
         {/* Previous card */}
@@ -121,12 +118,14 @@ export const ReportQuestionsView: React.FC = () => {
             <motion.div
               key={`prev-${prevQuestionId}`}
               layoutId={`card-${prevQuestionId}`}
-              className="absolute left-0 top-1/2 -translate-y-1/2 w-80 h-64 bg-muted rounded-lg overflow-hidden"
+              className="z-0 absolute left-0 top-1/2 -translate-y-1/2 w-80 h-64 rounded-lg rounded-l-none overflow-hidden border-2 border-l-0 bg-white flex flex-col justify-center items-center p-2 text-center text-sm text-muted-foreground"
               initial={{ opacity: 0, x: -100 }}
               animate={{ opacity: 0.6, x: 0 }}
               exit={{ opacity: 0, x: -100 }}
               transition={transition}
-            />
+            >
+              {prevQuestion.title}
+            </motion.div>
           )}
         </AnimatePresence>
 
@@ -134,12 +133,17 @@ export const ReportQuestionsView: React.FC = () => {
         <motion.div
           key={`current-${currentQuestionId}`}
           layoutId={`card-${currentQuestionId}`}
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-xl"
+          className="z-1 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-xl"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={transition}
         >
-          <Card className="min-h-[300px] py-4 flex flex-col gap-4">
+          <Card 
+            className="min-h-[300px] py-4 flex flex-col gap-4 rounded-lg border-2"
+            style={{
+              boxShadow: currentSection ? getGlowShadowStyle(currentSection.color) : undefined,
+            }}
+          >
             <CardHeader className="px-4 flex flex-col gap-4">
               <h2 className="text-xl">
                 {currentQuestion.title}
@@ -184,12 +188,14 @@ export const ReportQuestionsView: React.FC = () => {
             <motion.div
               key={`next-${nextQuestionId}`}
               layoutId={`card-${nextQuestionId}`}
-              className="absolute right-0 top-1/2 -translate-y-1/2 w-80 h-64 bg-muted rounded-lg overflow-hidden"
+              className="z-0 absolute right-0 top-1/2 -translate-y-1/2 w-80 h-64 rounded-lg rounded-r-none overflow-hidden border-2 border-r-0 bg-white flex flex-col justify-center items-center p-2 text-center text-sm text-muted-foreground"
               initial={{ opacity: 0, x: 100 }}
               animate={{ opacity: 0.6, x: 0 }}
               exit={{ opacity: 0, x: 100 }}
               transition={transition}
-            />
+            >
+              {nextQuestion.title}
+            </motion.div>
           )}
         </AnimatePresence>
       </div>

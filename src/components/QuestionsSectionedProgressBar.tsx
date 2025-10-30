@@ -3,14 +3,14 @@ import { getBgColorTWClass } from "@/util/colors";
 import { motion } from "framer-motion";
 import type React from "react";
 
-interface SectionedProgressBarProps {
+interface Props {
   sections: ReportSection[];
   currentQuestionIndex: number;
   totalQuestions: number;
   className?: string;
 }
 
-export const SectionedProgressBar: React.FC<SectionedProgressBarProps> = ({
+export const QuestionsSectionedProgressBar: React.FC<Props> = ({
   sections,
   currentQuestionIndex,
   totalQuestions,
@@ -39,7 +39,7 @@ export const SectionedProgressBar: React.FC<SectionedProgressBarProps> = ({
   );
 
   return (
-    <div className={`flex flex-row gap-0.5 w-full h-6 ${className}`}>
+    <div className={`flex flex-row gap-0.5 h-6 ${className}`}>
       {sections.map((section, index) => {
         const isCurrentSection = index === currentSectionIndex;
         const isFirst = index === 0;

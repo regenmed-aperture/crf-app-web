@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { initializePatientReportSession } from "@/store/slices/reportStateSlice";
+import { isAuthenticated } from "@/util/auth";
 import { Check } from "lucide-react";
 import React, { useState } from "react";
 
@@ -28,7 +29,7 @@ export const ReportAuthView: React.FC = () => {
         <p className="text-sm text-muted-foreground">authenticating...</p>
       </div>
     );
-  } else if (!!user) {
+  } else if (!!user && isAuthenticated()) {
     // this is mainly to help with the slide-out animation. without this we'd have a flicker
     // of the sign in form for a brief moment which doesnt look good
     return (

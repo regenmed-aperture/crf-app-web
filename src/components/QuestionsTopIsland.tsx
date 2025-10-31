@@ -15,7 +15,7 @@ interface Props {
 export const QuestionsTopIsland: React.FC<Props> = ({
   currentQuetionIndex,
   totalQuestionsNum,
-  currentSection
+  currentSection,
 }) => {
   const reportState = useAppSelector(state => state.reportState);
 
@@ -28,13 +28,14 @@ export const QuestionsTopIsland: React.FC<Props> = ({
         className="w-[calc(100%+1.25rem)] -mt-1 -mx-2.5"
       />
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-2 pb-2">
-        <Button
-          variant="secondary"
-          className="justify-self-start"
-        >
-          <LayoutGrid />
-          View All
-        </Button>
+        <div className="justify-self-start flex items-center gap-2">
+          <Button
+            variant="secondary"
+          >
+            <LayoutGrid />
+            View All
+          </Button>
+        </div>
         <h3 className="text-lg tracking-wide text-center">
           {currentSection?.name}
         </h3>

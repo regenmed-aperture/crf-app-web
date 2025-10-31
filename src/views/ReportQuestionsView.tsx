@@ -30,6 +30,10 @@ export const ReportQuestionsView: React.FC = () => {
 
   // Simple index state - just track position in the flat list
   const [currentIndex, setCurrentIndex] = useState(0);
+  
+  // Track section transitions for celebration
+  const [previousSectionId, setPreviousSectionId] = useState<number | null>(null);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   // Restore position on mount
   useEffect(() => {
@@ -58,6 +62,26 @@ export const ReportQuestionsView: React.FC = () => {
       dispatch(setCurrentQuestionId(String(currentQuestionId)));
     }
   }, [currentQuestionId, currentSection, dispatch]);
+
+  // Separate effect for section transition detection (only when section changes)
+  useEffect(() => {
+    if (currentSection) {
+      // Detect section transition (but not on first load)
+      if (previousSectionId !== null && previousSectionId !== currentSection.id) {
+        setShowCelebration(true);
+        // Auto-dismiss after 1.5 seconds
+        const timer = setTimeout(() => {
+          setShowCelebration(false);
+        }, 1500);
+        return () => clearTimeout(timer);
+      }
+      
+      // Update previous section only when it actually changes
+      if (previousSectionId !== currentSection.id) {
+        setPreviousSectionId(currentSection.id);
+      }
+    }
+  }, [currentSection?.id]); // Only depend on section ID, not the whole object
 
   // Navigation handlers
   const onNextClicked = () => {
@@ -104,6 +128,82 @@ export const ReportQuestionsView: React.FC = () => {
 
   return (
     <div className="w-full h-full flex justify-center items-center relative overflow-hidden">
+      {/* Celebration Animation Overlay - Minimal & Sleek */}
+      <AnimatePresence>
+        {showCelebration && currentSection && (
+          <>
+            {/* Subtle radial pulse - no backdrop blur */}
+            <motion.div
+              className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              {/* Multiple expanding rings for depth */}
+              {[0, 0.15, 0.3].map((delay) => (
+                <motion.div
+                  key={delay}
+                  className="absolute w-32 h-32 border-4 rounded-full"
+                  style={{ borderColor: `${currentSection.color}40` }}
+                  initial={{ scale: 0, opacity: 0.8 }}
+                  animate={{ scale: 8, opacity: 0 }}
+                  transition={{ duration: 1, delay, ease: "easeOut" }}
+                />
+              ))}
+            </motion.div>
+            
+            {/* Minimal emoji particles - fewer, more subtle */}
+            {['✨', '⭐', '✨', '⭐'].map((emoji, i) => (
+              <motion.div
+                key={i}
+                className="absolute text-2xl z-40 pointer-events-none"
+                style={{ left: '50%', top: '50%' }}
+                initial={{ scale: 0, x: 0, y: 0, opacity: 0 }}
+                animate={{
+                  scale: [0, 1, 0.8],
+                  x: Math.cos((i / 4) * Math.PI * 2) * 150,
+                  y: Math.sin((i / 4) * Math.PI * 2) * 150 - 50,
+                  opacity: [0, 1, 0],
+                }}
+                transition={{ duration: 1, delay: i * 0.08, ease: "easeOut" }}
+              >
+                {emoji}
+              </motion.div>
+            ))}
+            
+            {/* Sleek minimal toast notification */}
+            <motion.div
+              className="absolute top-24 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
+              initial={{ opacity: 0, y: -20, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.9 }}
+              transition={{ type: "spring", damping: 20, stiffness: 300 }}
+            >
+              <div 
+                className="bg-white/95 backdrop-blur-md rounded-full px-6 py-3 shadow-lg border flex items-center gap-3"
+                style={{ borderColor: currentSection.color }}
+              >
+                <motion.span
+                  className="text-xl"
+                  animate={{ rotate: [0, 15, -15, 0] }}
+                  transition={{ duration: 0.4, repeat: 1 }}
+                >
+                  🎉
+                </motion.span>
+                <span className="font-medium text-sm text-gray-700">
+                  Section Complete
+                </span>
+                <div 
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: currentSection.color }}
+                />
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+      
       <div className="absolute w-full top-[40px] px-8 flex justify-center">
         <QuestionsTopIsland
           currentQuetionIndex={currentIndex}
@@ -139,7 +239,7 @@ export const ReportQuestionsView: React.FC = () => {
           transition={transition}
         >
           <Card 
-            className="min-h-[300px] py-4 flex flex-col gap-4 rounded-lg border-2"
+            className="min-h-[300px] py-4 flex flex-col gap-4 rounded-lg border-2 overflow-hidden relative"
             style={{
               boxShadow: currentSection ? getGlowShadowStyle(currentSection.color) : undefined,
             }}

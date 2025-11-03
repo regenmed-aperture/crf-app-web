@@ -46,7 +46,7 @@ export const uiStateSlice = createSlice({
       return {
         ...state,
         currentQuestionId: action.payload
-      }
+      };
     },
   },
   extraReducers: (builder) => {

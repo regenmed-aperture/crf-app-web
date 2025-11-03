@@ -10,7 +10,7 @@ import { IncytesQuestionType, type IncytesAnalogQuestionModel, type IncytesDateQ
 import { Kbd } from "@/components/ui/kbd";
 import { SliderQuestionBody } from "@/components/questions/SliderQuestionBody";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Info, Sidebar } from "lucide-react";
+import { Info } from "lucide-react";
 import { DateQuestionBody } from "@/components/questions/DateQuestionBody";
 import { MultipleChoiceMultipleValueQuestionBody } from "@/components/questions/MultipleChoiceMultipleValueQuestionBody";
 import { Separator } from "@/components/ui/separator";
@@ -32,7 +32,7 @@ export const ReportQuestionsView: React.FC = () => {
     const questionId = allQuestionIds[0];
     const sectionId = reportState.sections.find(s => s.questionIds.includes(questionId))?.id;
     dispatch(setCurrentQuestionId(questionId));
-    dispatch(setCurrentSectionId(sectionId));
+    dispatch(setCurrentSectionId(sectionId ?? null));
   }, []);
 
   const [showCelebration, setShowCelebration] = useState(false);

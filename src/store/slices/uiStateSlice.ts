@@ -1,5 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { fetchPatientReportData, initializePatientReportSession } from "./reportStateSlice";
+import { act } from "react";
 
 const SLICE_NAME = 'uiState';
 
@@ -30,13 +31,22 @@ export const uiStateSlice = createSlice({
   initialState,
   reducers: {
     setCurrentView(state, action: PayloadAction<UIView>) {
-      state.currentView = action.payload;
+      return {
+        ...state,
+        currentView: action.payload
+      };
     },
     setCurrentSectionId(state, action: PayloadAction<string|null>) {
-      state.currentSectionId = action.payload;
+      return {
+        ...state,
+        currentSectionId: action.payload
+      }
     },
     setCurrentQuestionId(state, action: PayloadAction<string|null>) {
-      state.currentQuestionId = action.payload;
+      return {
+        ...state,
+        currentQuestionId: action.payload
+      }
     },
   },
   extraReducers: (builder) => {

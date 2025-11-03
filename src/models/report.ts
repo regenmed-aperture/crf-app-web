@@ -13,10 +13,10 @@ export type ReportQuestion =
   | IncytesQuestionBase;
 
 export interface ReportSection {
-  id: number,
+  id: string,
   name: string,
   color: string,
-  questionIds: number[],
+  questionIds: string[],
 }
 
 export interface ReportQuestionResponse {

@@ -50,7 +50,7 @@ export const ReportQuestionsView: React.FC = () => {
 
   // Simple index state - just track position in the flat list
   const currentIndex = allQuestionIds.findIndex(questionId => {
-    return questionId === uiState.currentQuestionId
+    return questionId === uiState.currentQuestionId;
   });
 
   // Get current question

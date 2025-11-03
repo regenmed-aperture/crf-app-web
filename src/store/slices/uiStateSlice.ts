@@ -1,6 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { fetchPatientReportData, initializePatientReportSession } from "./reportStateSlice";
-import { act } from "react";
 
 const SLICE_NAME = 'uiState';
 
@@ -16,8 +15,8 @@ export enum UIView {
 
 export interface UIState {
   currentView: UIView,
-  currentSectionId: string | null,
-  currentQuestionId?: string | null,
+  currentSectionId: number | null,
+  currentQuestionId?: number | null,
 }
 
 const initialState: UIState = {
@@ -36,13 +35,13 @@ export const uiStateSlice = createSlice({
         currentView: action.payload
       };
     },
-    setCurrentSectionId(state, action: PayloadAction<string|null>) {
+    setCurrentSectionId(state, action: PayloadAction<number|null>) {
       return {
         ...state,
         currentSectionId: action.payload
       }
     },
-    setCurrentQuestionId(state, action: PayloadAction<string|null>) {
+    setCurrentQuestionId(state, action: PayloadAction<number|null>) {
       return {
         ...state,
         currentQuestionId: action.payload

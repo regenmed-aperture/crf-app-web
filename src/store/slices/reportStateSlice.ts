@@ -65,7 +65,7 @@ export const fetchPatientReportData = createAsyncThunk(
     data.answeredQuestions[0].questions.forEach(q => {
       if (!q.title) return;
 
-      let questionId = q.id ? q.id : randomIntFromInterval(10000, 99999);
+      const questionId = q.id ?? randomIntFromInterval(10000, 99999);
 
       const sectionName = q.isBundle ? q.bundleName : "Preliminary";
       let existingIdx = sections.findIndex(v => v.name === sectionName);

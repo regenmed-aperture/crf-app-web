@@ -33,6 +33,7 @@ export const ReportQuestionsView: React.FC = () => {
     const sectionId = reportState.sections.find(s => s.questionIds.includes(questionId))?.id;
     dispatch(setCurrentQuestionId(questionId));
     dispatch(setCurrentSectionId(sectionId ?? null));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const [showCelebration, setShowCelebration] = useState(false);
@@ -66,13 +67,13 @@ export const ReportQuestionsView: React.FC = () => {
         return () => clearTimeout(timer);
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSection?.id]); // Only depend on section ID, not the whole object
 
   // Navigation handlers
   const onNextClicked = () => {
     if (currentIndex < allQuestionIds.length - 1) {
       const nextQuestionId = allQuestionIds[currentIndex + 1];
-      const nextQuestion = reportState.questions[nextQuestionId];
       const nextSectionId = reportState.sections.find(s => s.questionIds.includes(nextQuestionId))?.id;
 
       dispatch(setCurrentQuestionId(nextQuestionId));
@@ -83,7 +84,6 @@ export const ReportQuestionsView: React.FC = () => {
   const onPrevClicked = () => {
     if (currentIndex > 0) {
       const previousQuestionId = allQuestionIds[currentIndex - 1];
-      const previousQuestion = reportState.questions[prevQuestionId];
       const previousSectionId = reportState.sections.find(s => s.questionIds.includes(previousQuestionId))?.id;
 
       dispatch(setCurrentQuestionId(previousQuestionId));

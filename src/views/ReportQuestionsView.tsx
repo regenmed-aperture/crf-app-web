@@ -29,10 +29,13 @@ export const ReportQuestionsView: React.FC = () => {
   );
 
   useEffect(() => {
-    const questionId = allQuestionIds[0];
-    const sectionId = reportState.sections.find(s => s.questionIds.includes(questionId))?.id;
-    dispatch(setCurrentQuestionId(questionId));
-    dispatch(setCurrentSectionId(sectionId ?? null));
+    // Only set initial question if there isn't already one stored (e.g., from persistence)
+    if (!uiState.currentQuestionId) {
+      const questionId = allQuestionIds[0];
+      const sectionId = reportState.sections.find(s => s.questionIds.includes(questionId))?.id;
+      dispatch(setCurrentQuestionId(questionId));
+      dispatch(setCurrentSectionId(sectionId ?? null));
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

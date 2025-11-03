@@ -5,6 +5,7 @@ import type { ReportSection } from "@/models/report";
 import { Button } from "./ui/button";
 import { LayoutGrid, ListOrdered } from "lucide-react";
 import { Badge } from "./ui/badge";
+import { QuestionsViewAllDialogue } from "./QuestionsViewAllDialogue";
 
 interface Props {
   currentQuetionIndex: number,
@@ -29,12 +30,15 @@ export const QuestionsTopIsland: React.FC<Props> = ({
       />
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-2 pb-2">
         <div className="justify-self-start flex items-center gap-2">
-          <Button
-            variant="secondary"
-          >
-            <LayoutGrid />
-            View All
-          </Button>
+          <QuestionsViewAllDialogue>
+            <Button
+              variant="secondary"
+              className="hover:cursor-pointer"
+            >
+              <LayoutGrid />
+              View All
+            </Button>
+          </QuestionsViewAllDialogue>
         </div>
         <h3 className="text-lg tracking-wide text-center">
           {currentSection?.name}

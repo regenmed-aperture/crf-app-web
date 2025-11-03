@@ -46,7 +46,7 @@ export const QuestionsViewAllDialogue: React.FC<Props> = ({ children }) => {
                   variant="outline"
                   className={cn([
                     "w-full h-16 gap-0",
-                    index > currentIndex ? "opacity-20" : "hover: cursor-pointer"
+                    index > currentIndex ? "opacity-20" : "hover:cursor-pointer"
                   ])}
                   onClick={() => {
                     if (index > currentIndex) {

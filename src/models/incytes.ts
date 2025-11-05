@@ -150,6 +150,7 @@ export interface IncytesQuestionBase {
   visibilityRule: string;
   optionalRule: string;
   isBilateral: boolean;
+  answered: boolean;
   context: string;
 }
 

@@ -6,7 +6,7 @@ import { motion, AnimatePresence, type Transition } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import type React from "react";
 import { MultipleChoiceSingleValueQuestionBody } from "@/components/questions/MultipleChoiceSingleValueQuestionBody";
-import { IncytesQuestionType, type IncytesAnalogQuestionModel, type IncytesDateQuestionModel, type IncytesMultipleValueQuestionModel, type IncytesSingleValueQuestionModel } from "@/models/incytes";
+import { IncytesQuestionType, type IncytesAnalogQuestionModel, type IncytesDateQuestionModel, type IncytesMultipleValueQuestionModel, type IncytesSingleValueQuestionModel, type IncytesSingleValueAnswer, type IncytesMultipleValueAnswer} from "@/models/incytes";
 import { Kbd } from "@/components/ui/kbd";
 import { SliderQuestionBody } from "@/components/questions/SliderQuestionBody";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -16,6 +16,8 @@ import { MultipleChoiceMultipleValueQuestionBody } from "@/components/questions/
 import { Separator } from "@/components/ui/separator";
 import { QuestionsTopIsland } from "@/components/QuestionsTopIsland";
 import { getGlowShadowStyle } from "@/util/colors";
+
+const answers: any[] = [];
 
 export const ReportQuestionsView: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -46,7 +48,8 @@ export const ReportQuestionsView: React.FC = () => {
 
   // Track section transitions for celebration
   const currentSectionIndex = reportState.sections.findIndex(s => s === currentSection);
-  const previousSectionId = currentSectionIndex > 0 ? reportState.sections[currentSectionIndex - 1].id : null;
+  const previousSection = currentSectionIndex > 0 ? reportState.sections[currentSectionIndex - 1] : null;
+  const previousSectionId = previousSection ? previousSection.id : null;
 
   // Simple index state - just track position in the flat list
   const currentIndex = allQuestionIds.findIndex(questionId => {
@@ -61,7 +64,9 @@ export const ReportQuestionsView: React.FC = () => {
   useEffect(() => {
     if (currentSection) {
       // Detect section transition (but not on first load)
-      if (previousSectionId !== null && previousSectionId !== currentSection.id) {
+      var prevSectComplete = true;
+      previousSection?.questionIds.forEach(x => prevSectComplete = prevSectComplete && answers?.find(y => y.id === x))
+      if (previousSectionId !== null && previousSectionId < currentSection.id && prevSectComplete) {
         setShowCelebration(true);
         // Auto-dismiss after 1.5 seconds
         const timer = setTimeout(() => {
@@ -261,18 +266,22 @@ export const ReportQuestionsView: React.FC = () => {
                   {currentQuestion.questionType === IncytesQuestionType.SingleValue ? (
                     <MultipleChoiceSingleValueQuestionBody
                       question={currentQuestion as IncytesSingleValueQuestionModel}
+                      onAnswerChange={(response) => answers.push({id:currentQuestion.id,answer:response})}
                     />
                   ) : currentQuestion.questionType === IncytesQuestionType.Analog ? (
                     <SliderQuestionBody
                       question={currentQuestion as IncytesAnalogQuestionModel}
+                      onAnswerChange={(response) => answers.push({id:currentQuestion.id,answer:response})}
                     />
                   ) : currentQuestion.questionType === IncytesQuestionType.Date ? (
                     <DateQuestionBody
                       question={currentQuestion as IncytesDateQuestionModel}
+                      onAnswerChange={(response) => answers.push({id:currentQuestion.id,answer:response})}
                     />
                   ) : currentQuestion.questionType === IncytesQuestionType.MultipleValue ? (
                     <MultipleChoiceMultipleValueQuestionBody
                       question={currentQuestion as IncytesMultipleValueQuestionModel}
+                      onAnswerChange={(response) => answers.push({id:currentQuestion.id,answer:response})}
                     />
                   ) : null}
                 </div>

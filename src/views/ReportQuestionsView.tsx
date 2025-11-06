@@ -16,6 +16,7 @@ import { MultipleChoiceMultipleValueQuestionBody } from "@/components/questions/
 import { Separator } from "@/components/ui/separator";
 import { QuestionsTopIsland } from "@/components/QuestionsTopIsland";
 import { getGlowShadowStyle } from "@/util/colors";
+import { Badge } from "@/components/ui/badge";
 
 export const ReportQuestionsView: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -242,7 +243,10 @@ export const ReportQuestionsView: React.FC = () => {
                 boxShadow: currentSection ? getGlowShadowStyle(currentSection.color) : undefined,
               }}
             >
-              <CardHeader className="px-4 flex flex-col gap-4">
+              <CardHeader className="px-4 flex flex-row gap-2 items-start">
+                <Badge variant="secondary" className="justify-self-end flex flex-row items-center gap-1 rounded-full text-md min-w-[30px]">
+                  {currentIndex + 1}
+                </Badge>
                 <h2 className="text-xl">
                   {currentQuestion.title}
                 </h2>

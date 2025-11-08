@@ -111,7 +111,30 @@ export const ReportQuestionsView: React.FC = () => {
   const isFirstQuestion = currentIndex === 0;
   const isLastQuestion = currentIndex === allQuestionIds.length - 1;
 
-  // Get adjacent questions for preview
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        if (!isLastQuestion) {
+          onNextClicked();
+        } else {
+          onFinishClicked();
+        }
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        if (!isFirstQuestion) {
+          onPrevClicked();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentIndex, isFirstQuestion, isLastQuestion, onNextClicked, onPrevClicked, onFinishClicked]);
   const prevQuestionId = currentIndex > 0 ? allQuestionIds[currentIndex - 1] : null;
   const nextQuestionId = currentIndex < allQuestionIds.length - 1 ? allQuestionIds[currentIndex + 1] : null;
   const prevQuestion = prevQuestionId ? reportState.questions[prevQuestionId] : null;

@@ -5,7 +5,7 @@ import { Separator } from "@/components/ui/separator";
 import { useAppDispatch } from "@/store/hooks";
 import { setCurrentView, UIView } from "@/store/slices/uiStateSlice";
 import { FileText } from "lucide-react";
-import React from "react";
+import React, { useEffect } from "react";
 
 export const ReportConsentFormView: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -13,6 +13,25 @@ export const ReportConsentFormView: React.FC = () => {
   const onConsentGranted = () => {
     dispatch(setCurrentView(UIView.VIEW_QUESTIONS));
   };
+
+  const onConsentDeclined = () => {
+    dispatch(setCurrentView(UIView.VIEW_START));
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        onConsentGranted();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        onConsentDeclined();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onConsentGranted, onConsentDeclined]);
 
   return (
     <div className="w-full h-full flex flex-row justify-center items-center p-4">
@@ -82,7 +101,7 @@ export const ReportConsentFormView: React.FC = () => {
               <Button
                 variant="outline"
                 className="flex-1 flex flex-row justify-center items-center gap-2"
-                onClick={onConsentGranted}
+                onClick={onConsentDeclined}
               >
                 <span>I do not consent</span>
                 <Kbd className="bg-muted/40 text-primary">Esc</Kbd>

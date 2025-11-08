@@ -17,7 +17,11 @@ import { Separator } from "@/components/ui/separator";
 import { QuestionsTopIsland } from "@/components/QuestionsTopIsland";
 import { getGlowShadowStyle } from "@/util/colors";
 
+// Track questions whose answers were changed to track which sections are completed
 const answers: any[] = [];
+// Track which sections already have the celebration effect made so that they are not repeated.
+const completedSections: number[] = [];
+var forwardSurveyMovement: boolean = false;
 
 export const ReportQuestionsView: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -62,11 +66,12 @@ export const ReportQuestionsView: React.FC = () => {
 
   // Separate effect for section transition detection (only when section changes)
   useEffect(() => {
-    if (currentSection) {
+    if (currentSection && forwardSurveyMovement) {
       // Detect section transition (but not on first load)
       var prevSectComplete = true;
       previousSection?.questionIds.forEach(x => prevSectComplete = prevSectComplete && answers?.find(y => y.id === x))
-      if (previousSectionId !== null && previousSectionId < currentSection.id && prevSectComplete) {
+      if (previousSectionId !== null && previousSectionId !== currentSection.id && prevSectComplete && !completedSections.includes(previousSectionId)) {
+        completedSections.push(previousSectionId);
         setShowCelebration(true);
         // Auto-dismiss after 1.5 seconds
         const timer = setTimeout(() => {
@@ -80,6 +85,7 @@ export const ReportQuestionsView: React.FC = () => {
 
   // Navigation handlers
   const onNextClicked = () => {
+    forwardSurveyMovement = true;
     if (currentIndex < allQuestionIds.length - 1) {
       const nextQuestionId = allQuestionIds[currentIndex + 1];
       const nextSectionId = reportState.sections.find(s => s.questionIds.includes(nextQuestionId))?.id;
@@ -90,6 +96,7 @@ export const ReportQuestionsView: React.FC = () => {
   };
 
   const onPrevClicked = () => {
+    forwardSurveyMovement = false;
     if (currentIndex > 0) {
       const previousQuestionId = allQuestionIds[currentIndex - 1];
       const previousSectionId = reportState.sections.find(s => s.questionIds.includes(previousQuestionId))?.id;
@@ -266,7 +273,7 @@ export const ReportQuestionsView: React.FC = () => {
                   {currentQuestion.questionType === IncytesQuestionType.SingleValue ? (
                     <MultipleChoiceSingleValueQuestionBody
                       question={currentQuestion as IncytesSingleValueQuestionModel}
-                      onAnswerChange={(response) => answers.push({id:currentQuestion.id,answer:response})}
+                      onAnswerChange={(response) => answers.push({id:currentQuestion.id,answer:response}) }
                     />
                   ) : currentQuestion.questionType === IncytesQuestionType.Analog ? (
                     <SliderQuestionBody

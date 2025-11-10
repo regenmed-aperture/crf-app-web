@@ -8,6 +8,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useMemo, useState } from "react";
 import { setCurrentQuestionId, setCurrentSectionId } from "@/store/slices/uiStateSlice";
 import { cn } from "@/lib/utils";
+import { getBgColorTWClass } from "@/util/colors";
 
 interface Props {
   children?: React.ReactNode;
@@ -37,35 +38,54 @@ export const QuestionsViewAllDialogue: React.FC<Props> = ({ children }) => {
           </CardHeader>
         </Card>
         <div className="max-h-80 overflow-y-scroll">
-          <div className="space-y-2">
-            {allQuestionIds.map((questionId, index) => {
-              const question = reportState.questions[questionId];
+          <div className="space-y-3">
+            {reportState.sections.map((section) => {
               return (
-                <Button
-                  key={question.id}
-                  variant="outline"
-                  className={cn([
-                    "w-full h-16 gap-0",
-                    index > currentIndex ? "opacity-20" : "hover:cursor-pointer"
-                  ])}
-                  onClick={() => {
-                    if (index > currentIndex) {
-                      return;
-                    }
-
-                    const sectionId = reportState.sections.find(s => s.questionIds.includes(questionId))?.id;
-                    dispatch(setCurrentQuestionId(questionId));
-                    dispatch(setCurrentSectionId(sectionId ?? null));
-                    setOpen(false);
-                  }}
-                >
-                  <div className="size-6 mr-2 rounded-xl bg-gray-200 text-xs text-center flex items-center justify-center flex-shrink-0">
-                    {index + 1}
+                <div key={section.id} className="space-y-2">
+                  {/* Section Header */}
+                  <div className={cn(
+                    "rounded-lg px-4 py-2.5 text-white font-semibold text-sm",
+                    getBgColorTWClass(section.color)
+                  )}>
+                    {section.name}
                   </div>
-                  <p className="whitespace-normal text-left flex-1 overflow-hidden">
-                    {question.title}
-                  </p>
-                </Button>
+                  
+                  {/* Questions in this section */}
+                  {section.questionIds.map((questionId) => {
+                    const question = reportState.questions[questionId];
+                    const index = allQuestionIds.indexOf(questionId);
+                    
+                    return (
+                      <Button
+                        key={question.id}
+                        variant="outline"
+                        className={cn([
+                          "w-full h-16 gap-0",
+                          index > currentIndex ? "opacity-20" : "hover:cursor-pointer"
+                        ])}
+                        onClick={() => {
+                          if (index > currentIndex) {
+                            return;
+                          }
+
+                          dispatch(setCurrentQuestionId(questionId));
+                          dispatch(setCurrentSectionId(section.id));
+                          setOpen(false);
+                        }}
+                      >
+                        <div className={cn(
+                          "size-6 mr-2 rounded-xl text-xs text-center flex items-center justify-center flex-shrink-0 text-white font-medium",
+                          getBgColorTWClass(section.color)
+                        )}>
+                          {index + 1}
+                        </div>
+                        <p className="whitespace-normal text-left flex-1 overflow-hidden">
+                          {question.title}
+                        </p>
+                      </Button>
+                    );
+                  })}
+                </div>
               );
             })}
           </div>

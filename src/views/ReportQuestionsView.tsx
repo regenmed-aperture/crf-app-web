@@ -16,6 +16,7 @@ import { MultipleChoiceMultipleValueQuestionBody } from "@/components/questions/
 import { Separator } from "@/components/ui/separator";
 import { QuestionsTopIsland } from "@/components/QuestionsTopIsland";
 import { getGlowShadowStyle } from "@/util/colors";
+import { Badge } from "@/components/ui/badge";
 
 const answers: any[] = [];
 
@@ -115,7 +116,30 @@ export const ReportQuestionsView: React.FC = () => {
   const isFirstQuestion = currentIndex === 0;
   const isLastQuestion = currentIndex === allQuestionIds.length - 1;
 
-  // Get adjacent questions for preview
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        if (!isLastQuestion) {
+          onNextClicked();
+        } else {
+          onFinishClicked();
+        }
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        if (!isFirstQuestion) {
+          onPrevClicked();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentIndex, isFirstQuestion, isLastQuestion, onNextClicked, onPrevClicked, onFinishClicked]);
   const prevQuestionId = currentIndex > 0 ? allQuestionIds[currentIndex - 1] : null;
   const nextQuestionId = currentIndex < allQuestionIds.length - 1 ? allQuestionIds[currentIndex + 1] : null;
   const prevQuestion = prevQuestionId ? reportState.questions[prevQuestionId] : null;
@@ -247,7 +271,10 @@ export const ReportQuestionsView: React.FC = () => {
                 boxShadow: currentSection ? getGlowShadowStyle(currentSection.color) : undefined,
               }}
             >
-              <CardHeader className="px-4 flex flex-col gap-4">
+              <CardHeader className="px-4 flex flex-row gap-2 items-start">
+                <Badge variant="secondary" className="justify-self-end flex flex-row items-center gap-1 rounded-full text-md min-w-[30px]">
+                  {currentIndex + 1}
+                </Badge>
                 <h2 className="text-xl">
                   {currentQuestion.title}
                 </h2>

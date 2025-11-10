@@ -36,6 +36,18 @@ export const ReportStartView: React.FC = () => {
     }
   }, [params])
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        onBeginPressed();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onBeginPressed])
+
   // display a simple skeleton while loading survey
   if (reportState.isFetchingData) {
     return (

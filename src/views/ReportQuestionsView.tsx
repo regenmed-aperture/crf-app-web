@@ -3,10 +3,10 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setCurrentView, setCurrentSectionId, setCurrentQuestionId, UIView } from "@/store/slices/uiStateSlice";
 import { motion, AnimatePresence, type Transition } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import type React from "react";
 import { MultipleChoiceSingleValueQuestionBody } from "@/components/questions/MultipleChoiceSingleValueQuestionBody";
-import { IncytesQuestionType, type IncytesAnalogQuestionModel, type IncytesDateQuestionModel, type IncytesMultipleValueQuestionModel, type IncytesSingleValueQuestionModel, type IncytesSingleValueAnswer, type IncytesMultipleValueAnswer} from "@/models/incytes";
+import { IncytesQuestionType, type IncytesAnalogQuestionModel, type IncytesDateQuestionModel, type IncytesMultipleValueQuestionModel, type IncytesSingleValueQuestionModel } from "@/models/incytes";
 import { Kbd } from "@/components/ui/kbd";
 import { SliderQuestionBody } from "@/components/questions/SliderQuestionBody";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -18,16 +18,21 @@ import { QuestionsTopIsland } from "@/components/QuestionsTopIsland";
 import { getGlowShadowStyle } from "@/util/colors";
 import { Badge } from "@/components/ui/badge";
 
-// Track questions whose answers were changed to track which sections are completed
-const answers: any[] = [];
-// Track which sections already have the celebration effect made so that they are not repeated.
-const completedSections: number[] = [];
-var forwardSurveyMovement: boolean = false;
+type QuestionAnswer = {
+  id: number;
+  answer: number | number[] | string;
+};
 
 export const ReportQuestionsView: React.FC = () => {
   const dispatch = useAppDispatch();
   const reportState = useAppSelector(state => state.reportState);
   const uiState = useAppSelector(state => state.uiState);
+
+  // Track questions whose answers were changed to track which sections are completed
+  const answersRef = useRef<QuestionAnswer[]>([]);
+  // Track which sections already have the celebration effect made so that they are not repeated.
+  const completedSectionsRef = useRef<Set<number>>(new Set());
+  const forwardSurveyMovementRef = useRef<boolean>(false);
 
   // Build flat list of all question IDs in order
   const allQuestionIds = useMemo(
@@ -67,12 +72,19 @@ export const ReportQuestionsView: React.FC = () => {
 
   // Separate effect for section transition detection (only when section changes)
   useEffect(() => {
-    if (currentSection && forwardSurveyMovement) {
+    if (currentSection && forwardSurveyMovementRef.current) {
       // Detect section transition (but not on first load)
-      var prevSectComplete = true;
-      previousSection?.questionIds.forEach(x => prevSectComplete = prevSectComplete && answers?.find(y => y.id === x))
-      if (previousSectionId !== null && previousSectionId !== currentSection.id && prevSectComplete && !completedSections.includes(previousSectionId)) {
-        completedSections.push(previousSectionId);
+      const prevSectComplete = previousSection?.questionIds.every(
+        questionId => answersRef.current.some(answer => answer.id === questionId)
+      ) ?? false;
+
+      if (
+        previousSectionId !== null &&
+        previousSectionId !== currentSection.id &&
+        prevSectComplete &&
+        !completedSectionsRef.current.has(previousSectionId)
+      ) {
+        completedSectionsRef.current.add(previousSectionId);
         setShowCelebration(true);
         // Auto-dismiss after 1.5 seconds
         const timer = setTimeout(() => {
@@ -85,8 +97,8 @@ export const ReportQuestionsView: React.FC = () => {
   }, [currentSection?.id]); // Only depend on section ID, not the whole object
 
   // Navigation handlers
-  const onNextClicked = () => {
-    forwardSurveyMovement = true;
+  const onNextClicked = useCallback(() => {
+    forwardSurveyMovementRef.current = true;
     if (currentIndex < allQuestionIds.length - 1) {
       const nextQuestionId = allQuestionIds[currentIndex + 1];
       const nextSectionId = reportState.sections.find(s => s.questionIds.includes(nextQuestionId))?.id;
@@ -94,10 +106,10 @@ export const ReportQuestionsView: React.FC = () => {
       dispatch(setCurrentQuestionId(nextQuestionId));
       dispatch(setCurrentSectionId(nextSectionId ? nextSectionId : null));
     }
-  };
+  }, [currentIndex, allQuestionIds, reportState.sections, dispatch]);
 
-  const onPrevClicked = () => {
-    forwardSurveyMovement = false;
+  const onPrevClicked = useCallback(() => {
+    forwardSurveyMovementRef.current = false;
     if (currentIndex > 0) {
       const previousQuestionId = allQuestionIds[currentIndex - 1];
       const previousSectionId = reportState.sections.find(s => s.questionIds.includes(previousQuestionId))?.id;
@@ -105,12 +117,19 @@ export const ReportQuestionsView: React.FC = () => {
       dispatch(setCurrentQuestionId(previousQuestionId));
       dispatch(setCurrentSectionId(previousSectionId ? previousSectionId : null));
     }
-  };
+  }, [currentIndex, allQuestionIds, reportState.sections, dispatch]);
 
-  const onFinishClicked = () => {
+  const onFinishClicked = useCallback(() => {
     dispatch(setCurrentView(UIView.VIEW_RESULTS));
     dispatch(setCurrentQuestionId(null));
     dispatch(setCurrentSectionId(null));
+  }, [dispatch]);
+
+  const handleAnswerChange = (questionId: number, answer: QuestionAnswer['answer']) => {
+    // Remove any existing answer for this question
+    answersRef.current = answersRef.current.filter(a => a.id !== questionId);
+    // Add the new answer
+    answersRef.current.push({ id: questionId, answer });
   };
 
   const transition: Transition = {
@@ -300,22 +319,22 @@ export const ReportQuestionsView: React.FC = () => {
                   {currentQuestion.questionType === IncytesQuestionType.SingleValue ? (
                     <MultipleChoiceSingleValueQuestionBody
                       question={currentQuestion as IncytesSingleValueQuestionModel}
-                      onAnswerChange={(response) => answers.push({id:currentQuestion.id,answer:response}) }
+                      onAnswerChange={(response) => handleAnswerChange(currentQuestion.id!, response)}
                     />
                   ) : currentQuestion.questionType === IncytesQuestionType.Analog ? (
                     <SliderQuestionBody
                       question={currentQuestion as IncytesAnalogQuestionModel}
-                      onAnswerChange={(response) => answers.push({id:currentQuestion.id,answer:response})}
+                      onAnswerChange={(response) => handleAnswerChange(currentQuestion.id!, response)}
                     />
                   ) : currentQuestion.questionType === IncytesQuestionType.Date ? (
                     <DateQuestionBody
                       question={currentQuestion as IncytesDateQuestionModel}
-                      onAnswerChange={(response) => answers.push({id:currentQuestion.id,answer:response})}
+                      onAnswerChange={(response) => handleAnswerChange(currentQuestion.id!, response)}
                     />
                   ) : currentQuestion.questionType === IncytesQuestionType.MultipleValue ? (
                     <MultipleChoiceMultipleValueQuestionBody
                       question={currentQuestion as IncytesMultipleValueQuestionModel}
-                      onAnswerChange={(response) => answers.push({id:currentQuestion.id,answer:response})}
+                      onAnswerChange={(response) => handleAnswerChange(currentQuestion.id!, response)}
                     />
                   ) : null}
                 </div>

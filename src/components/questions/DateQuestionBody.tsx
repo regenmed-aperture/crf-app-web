@@ -3,6 +3,8 @@ import { Input } from "@/components/ui/input";
 import type { IncytesDateQuestionModel } from "@/models/incytes";
 import type React from "react";
 import { useState } from "react";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { setQuestionResponse, type QuestionResponse } from "@/store/slices/uiStateSlice";
 
 interface Props {
   question: IncytesDateQuestionModel;
@@ -13,10 +15,20 @@ export const DateQuestionBody: React.FC<Props> = ({
   question,
   onAnswerChange,
 }) => {
+  const uiState = useAppSelector(state => state.uiState);
+  const dispatch = useAppDispatch();
   const [dateValue, setDateValue] = useState<string>(question.value || "");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
+
+    const questionRespose: QuestionResponse = {
+      questionId: question.id,
+      questionType: question.questionType,
+      answer: question.value
+    };
+    dispatch(setQuestionResponse([question.id, questionRespose]));
+
     setDateValue(value);
     onAnswerChange?.(value);
   };

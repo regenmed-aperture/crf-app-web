@@ -1,5 +1,7 @@
 import { cn } from "@/lib/utils";
 import type { IncytesMultipleValueQuestionModel } from "@/models/incytes";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { setQuestionResponse, type QuestionResponse } from "@/store/slices/uiStateSlice";
 import { Check } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
@@ -18,6 +20,7 @@ export const MultipleChoiceMultipleValueQuestionBody: React.FC<Props> = ({
     .filter((a) => a.checked)
     .map((a) => a.id);
 
+  const dispatch = useAppDispatch();
   const [selectedAnswerIds, setSelectedAnswerIds] = useState<number[]>(initialAnswerIds);
 
   const handleToggle = (answerId: number) => {
@@ -25,6 +28,14 @@ export const MultipleChoiceMultipleValueQuestionBody: React.FC<Props> = ({
       const newSelection = prev.includes(answerId)
         ? prev.filter((id) => id !== answerId)
         : [...prev, answerId];
+
+      // Update changes back to the ui state
+      const questionResponse: QuestionResponse = {
+        questionId: question.id,
+        questionType: question.questionType,
+        answer: newSelection
+      };
+      dispatch(setQuestionResponse([question.id, questionResponse]));
 
       onAnswerChange?.(newSelection);
       return newSelection;

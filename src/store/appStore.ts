@@ -15,7 +15,7 @@ const reportPersistConfig = {
 const uiPersistConfig = {
   key: 'uiState',
   storage,
-  whitelist: ['currentSectionId', 'currentQuestionId'], // only persist these fields
+  whitelist: ['currentSectionId', 'currentQuestionId', 'currentResponses'], // only persist these fields
 };
 
 const combined = combineReducers({

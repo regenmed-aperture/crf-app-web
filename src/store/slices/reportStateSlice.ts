@@ -132,7 +132,7 @@ export const reportStateSlice = createSlice({
         state.sections = action.payload.sections;
         state.questions = action.payload.questions;
         state.navigation = action.payload.navigation;
-        state.displayTitle = action.payload.navigation.surveyTitle.replace("Survey", "");
+        state.displayTitle = action.payload.navigation.surveyTitle?.replace("Survey", "");
         state.responses = {};
 
         state.remainingSecondsToCompleteEstimate = Object.keys(state.questions).length * 20;

@@ -1,8 +1,10 @@
 import { cn } from "@/lib/utils";
-import type { IncytesSingleValueQuestionModel } from "@/models/incytes";
+import type { IncytesQuestionAnswerModel, IncytesSingleValueQuestionModel } from "@/models/incytes";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { setQuestionResponse, type QuestionResponse } from "@/store/slices/uiStateSlice";
 import { Circle, CircleCheck } from "lucide-react";
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface Props {
   question: IncytesSingleValueQuestionModel;
@@ -16,8 +18,19 @@ export const MultipleChoiceSingleValueQuestionBody: React.FC<Props> = ({
   // Find initially checked answer or null
   const initialAnswer = question.answers.find((a) => a.checked)?.id ?? null;
   const [selectedAnswerId, setSelectedAnswerId] = useState<number | null>(initialAnswer);
+  const dispatch = useAppDispatch();
 
   const handleSelect = (answerId: number) => {
+    if (!question.id){
+      return;
+    }
+    const questionResponse: QuestionResponse = {
+      questionId: question.id,
+      questionType: question.questionType,
+      answer: answerId
+    };
+    dispatch(setQuestionResponse([question.id, questionResponse]));
+
     setSelectedAnswerId(answerId);
     onAnswerChange?.(answerId);
   };

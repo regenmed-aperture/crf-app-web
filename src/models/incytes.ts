@@ -289,3 +289,18 @@ export interface IncytesUserModel extends IncytesResponseModel {
   isNotificationsDisabled: boolean;
   isSelfOnboarding: boolean; 
 }
+
+export interface IncytesQuestionAnswerModel {
+  questionType: number,
+  questionId: number,
+  answer: string,
+  savedBy?: string,
+  fileLength?: string,
+  fileName?: string,
+  mimeType?: string,
+  url?: string,
+  smallThumbnailUrl?: string,
+  mediumThumbnailUrl?: string,
+  notChanged?: boolean | null,
+  isBilateral?: boolean
+}

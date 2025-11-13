@@ -9,8 +9,8 @@ import { MultipleChoiceSingleValueQuestionBody } from "@/components/questions/Mu
 import { IncytesQuestionType, type IncytesAnalogQuestionModel, type IncytesDateQuestionModel, type IncytesMultipleValueQuestionModel, type IncytesSingleValueQuestionModel, type IncytesSingleValueAnswer, type IncytesMultipleValueAnswer} from "@/models/incytes";
 import { Kbd } from "@/components/ui/kbd";
 import { SliderQuestionBody } from "@/components/questions/SliderQuestionBody";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Info } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertTriangleIcon, Info } from "lucide-react";
 import { DateQuestionBody } from "@/components/questions/DateQuestionBody";
 import { MultipleChoiceMultipleValueQuestionBody } from "@/components/questions/MultipleChoiceMultipleValueQuestionBody";
 import { Separator } from "@/components/ui/separator";
@@ -43,6 +43,7 @@ export const ReportQuestionsView: React.FC = () => {
   }, []);
 
   const [showCelebration, setShowCelebration] = useState(false);
+  const [error, setError] = useState(false);
 
   // Find which section we're in (for display only)
   const currentSection = reportState.sections.find(s => s.id === uiState.currentSectionId);
@@ -81,6 +82,14 @@ export const ReportQuestionsView: React.FC = () => {
 
   // Navigation handlers
   const onNextClicked = () => {
+    if (!uiState.currentResponses?.hasOwnProperty(currentQuestionId)){
+      setError(true);
+      return;
+    }
+    else {
+      setError(false);
+    }
+
     if (currentIndex < allQuestionIds.length - 1) {
       const nextQuestionId = allQuestionIds[currentIndex + 1];
       const nextSectionId = reportState.sections.find(s => s.questionIds.includes(nextQuestionId))?.id;
@@ -101,6 +110,14 @@ export const ReportQuestionsView: React.FC = () => {
   };
 
   const onFinishClicked = () => {
+    if (!uiState.currentResponses?.hasOwnProperty(currentQuestionId)){
+      setError(true);
+      return;
+    }
+    else {
+      setError(false);
+    }
+
     dispatch(setCurrentView(UIView.VIEW_RESULTS));
     dispatch(setCurrentQuestionId(null));
     dispatch(setCurrentSectionId(null));
@@ -312,7 +329,46 @@ export const ReportQuestionsView: React.FC = () => {
                     />
                   ) : null}
                 </div>
-              </CardContent>
+                {/** Error alert */}
+                <AnimatePresence>
+                  {error && (
+                    <motion.div
+                      initial={{ 
+                        opacity: 0, 
+                        y: -20,
+                        rotate: 0 
+                      }}
+                      animate={{ 
+                        opacity: 1, 
+                        y: 0,
+                        rotate: [0, -3, 3, -3, 3, -2, 2, -1, 1, 0], // Dangling oscillation
+                      }}
+                      exit={{ 
+                        opacity: 0, 
+                        y: -20,
+                        rotate: 0 
+                      }}
+                      transition={{
+                        opacity: { duration: 0.2 },
+                        y: { duration: 0.3 },
+                        rotate: { 
+                          duration: 1.2,
+                          ease: "easeOut",
+                          times: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1] // Control timing of each rotation
+                        }
+                      }}
+                      style={{
+                        transformOrigin: 'top center'
+                      }}
+                    >
+                      <Alert variant="destructive" className="bg-[#fee] text-red-600 border-1 border-solid border-[#fcc]">
+                        <AlertTriangleIcon></AlertTriangleIcon>
+                        <AlertTitle>Please select an anser before proceeding to the next question</AlertTitle>
+                      </Alert>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </CardContent>  
             </Card>
           </motion.div>
 

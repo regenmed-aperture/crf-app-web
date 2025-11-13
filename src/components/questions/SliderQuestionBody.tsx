@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import type { IncytesAnalogQuestionModel } from "@/models/incytes";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { setQuestionResponse, type QuestionResponse } from "@/store/slices/uiStateSlice";
+import { setError, setQuestionResponse, type QuestionResponse } from "@/store/slices/uiStateSlice";
 import type React from "react";
 import { useState } from "react";
 
@@ -27,6 +27,8 @@ export const SliderQuestionBody: React.FC<Props> = ({
       questionType: question.questionType,
       answer: value
     };
+
+    dispatch(setError(false));
     dispatch(setQuestionResponse([question.id, questionResponse]));
     onAnswerChange?.(value);
   };

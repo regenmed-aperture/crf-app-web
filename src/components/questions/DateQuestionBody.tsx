@@ -4,7 +4,7 @@ import type { IncytesDateQuestionModel } from "@/models/incytes";
 import type React from "react";
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { setQuestionResponse, type QuestionResponse } from "@/store/slices/uiStateSlice";
+import { setError, setQuestionResponse, type QuestionResponse } from "@/store/slices/uiStateSlice";
 
 interface Props {
   question: IncytesDateQuestionModel;
@@ -26,6 +26,8 @@ export const DateQuestionBody: React.FC<Props> = ({
       questionType: question.questionType,
       answer: value
     };
+
+    dispatch(setError(false));
     dispatch(setQuestionResponse([question.id, questionRespose]));
     onAnswerChange?.(value);
   };

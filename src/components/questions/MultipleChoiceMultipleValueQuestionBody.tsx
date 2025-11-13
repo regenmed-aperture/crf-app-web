@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import type { IncytesMultipleValueQuestionModel } from "@/models/incytes";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { setQuestionResponse, type QuestionResponse } from "@/store/slices/uiStateSlice";
+import { setError, setQuestionResponse, type QuestionResponse } from "@/store/slices/uiStateSlice";
 import { Check } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
@@ -33,6 +33,7 @@ export const MultipleChoiceMultipleValueQuestionBody: React.FC<Props> = ({
         questionType: question.questionType,
         answer: newSelection.length > 0 ? newSelection : null
       };
+      dispatch(setError(false));
       dispatch(setQuestionResponse([question.id, questionResponse]));
 
       onAnswerChange?.(newSelection);

@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import type { IncytesQuestionAnswerModel, IncytesSingleValueQuestionModel } from "@/models/incytes";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { setQuestionResponse, type QuestionResponse } from "@/store/slices/uiStateSlice";
+import { setError, setQuestionResponse, type QuestionResponse } from "@/store/slices/uiStateSlice";
 import { Circle, CircleCheck } from "lucide-react";
 import type React from "react";
 import { useEffect, useState } from "react";
@@ -29,6 +29,7 @@ export const MultipleChoiceSingleValueQuestionBody: React.FC<Props> = ({
       questionType: question.questionType,
       answer: answerId
     };
+    dispatch(setError(false));
     dispatch(setQuestionResponse([question.id, questionResponse]));
 
     onAnswerChange?.(answerId);

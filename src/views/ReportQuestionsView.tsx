@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { setCurrentView, setCurrentSectionId, setCurrentQuestionId, UIView } from "@/store/slices/uiStateSlice";
+import { setCurrentView, setCurrentSectionId, setCurrentQuestionId, UIView, setError } from "@/store/slices/uiStateSlice";
 import { motion, AnimatePresence, type Transition } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import type React from "react";
@@ -43,7 +43,6 @@ export const ReportQuestionsView: React.FC = () => {
   }, []);
 
   const [showCelebration, setShowCelebration] = useState(false);
-  const [error, setError] = useState(false);
 
   // Find which section we're in (for display only)
   const currentSection = reportState.sections.find(s => s.id === uiState.currentSectionId);
@@ -82,12 +81,12 @@ export const ReportQuestionsView: React.FC = () => {
 
   // Navigation handlers
   const onNextClicked = () => {
-    if (!uiState.currentResponses?.hasOwnProperty(currentQuestionId)){
-      setError(true);
+    if (!uiState.currentResponses?.hasOwnProperty(currentQuestionId) || uiState.currentResponses[currentQuestionId].answer === null){
+      dispatch(setError(true));
       return;
     }
     else {
-      setError(false);
+      dispatch(setError(false));
     }
 
     if (currentIndex < allQuestionIds.length - 1) {
@@ -104,18 +103,19 @@ export const ReportQuestionsView: React.FC = () => {
       const previousQuestionId = allQuestionIds[currentIndex - 1];
       const previousSectionId = reportState.sections.find(s => s.questionIds.includes(previousQuestionId))?.id;
 
+      dispatch(setError(false));
       dispatch(setCurrentQuestionId(previousQuestionId));
       dispatch(setCurrentSectionId(previousSectionId ? previousSectionId : null));
     }
   };
 
   const onFinishClicked = () => {
-    if (!uiState.currentResponses?.hasOwnProperty(currentQuestionId)){
-      setError(true);
+    if (!uiState.currentResponses?.hasOwnProperty(currentQuestionId) || uiState.currentResponses[currentQuestionId].answer === null){
+      dispatch(setError(true));
       return;
     }
     else {
-      setError(false);
+      dispatch(setError(false));
     }
 
     dispatch(setCurrentView(UIView.VIEW_RESULTS));
@@ -331,7 +331,7 @@ export const ReportQuestionsView: React.FC = () => {
                 </div>
                 {/** Error alert */}
                 <AnimatePresence>
-                  {error && (
+                  {uiState.error && (
                     <motion.div
                       initial={{ 
                         opacity: 0, 
@@ -363,7 +363,7 @@ export const ReportQuestionsView: React.FC = () => {
                     >
                       <Alert variant="destructive" className="bg-[#fee] text-red-600 border-1 border-solid border-[#fcc]">
                         <AlertTriangleIcon></AlertTriangleIcon>
-                        <AlertTitle>Please select an anser before proceeding to the next question</AlertTitle>
+                        <AlertTitle>Please select an anwser before proceeding to the next question</AlertTitle>
                       </Alert>
                     </motion.div>
                   )}

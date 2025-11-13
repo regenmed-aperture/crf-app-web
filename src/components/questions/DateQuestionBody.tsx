@@ -17,19 +17,16 @@ export const DateQuestionBody: React.FC<Props> = ({
 }) => {
   const uiState = useAppSelector(state => state.uiState);
   const dispatch = useAppDispatch();
-  const [dateValue, setDateValue] = useState<string>(question.value || "");
 
+  const dateValue: string = uiState.currentResponses?.[question.id]?.answer ?? question.value;
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-
     const questionRespose: QuestionResponse = {
       questionId: question.id,
       questionType: question.questionType,
-      answer: question.value
+      answer: value
     };
     dispatch(setQuestionResponse([question.id, questionRespose]));
-
-    setDateValue(value);
     onAnswerChange?.(value);
   };
 

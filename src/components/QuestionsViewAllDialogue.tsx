@@ -6,7 +6,7 @@ import { Progress } from "./ui/progress";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useMemo, useState } from "react";
-import { setCurrentQuestionId, setCurrentSectionId } from "@/store/slices/uiStateSlice";
+import { setCurrentQuestionId, setCurrentSectionId, setError } from "@/store/slices/uiStateSlice";
 import { cn } from "@/lib/utils";
 import { getBgColorTWClass } from "@/util/colors";
 
@@ -68,6 +68,7 @@ export const QuestionsViewAllDialogue: React.FC<Props> = ({ children }) => {
                             return;
                           }
 
+                          dispatch(setError(false));
                           dispatch(setCurrentQuestionId(questionId));
                           dispatch(setCurrentSectionId(section.id));
                           setOpen(false);

@@ -26,6 +26,7 @@ export interface UIState {
   currentSectionId: number | null,
   currentQuestionId?: number | null,
   currentResponses: Record<number, QuestionResponse> | null,
+  error: boolean
 }
 
 const initialState: UIState = {
@@ -33,6 +34,7 @@ const initialState: UIState = {
   currentSectionId: null,
   currentQuestionId: null,
   currentResponses: null,
+  error: false
 };
 
 export const uiStateSlice = createSlice({
@@ -76,6 +78,12 @@ export const uiStateSlice = createSlice({
           }
         }
       }
+    },
+    setError(state, action: PayloadAction<boolean>){
+      return {
+        ...state,
+        error: action.payload
+      }
     }
   },
   extraReducers: (builder) => {
@@ -95,5 +103,6 @@ export const {
   setCurrentView,
   setCurrentSectionId,
   setCurrentQuestionId,
-  setQuestionResponse
+  setQuestionResponse,
+  setError
  } = uiStateSlice.actions;

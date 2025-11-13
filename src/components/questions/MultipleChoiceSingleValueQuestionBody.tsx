@@ -15,11 +15,11 @@ export const MultipleChoiceSingleValueQuestionBody: React.FC<Props> = ({
   question,
   onAnswerChange,
 }) => {
-  // Find initially checked answer or null
-  const initialAnswer = question.answers.find((a) => a.checked)?.id ?? null;
-  const [selectedAnswerId, setSelectedAnswerId] = useState<number | null>(initialAnswer);
+  const uiState = useAppSelector(state => state.uiState);
   const dispatch = useAppDispatch();
 
+  // Find initially checked answer or null
+  const currentAnswerId: number | null = uiState.currentResponses?.[question.id]?.answer ?? null;
   const handleSelect = (answerId: number) => {
     if (!question.id){
       return;
@@ -31,7 +31,6 @@ export const MultipleChoiceSingleValueQuestionBody: React.FC<Props> = ({
     };
     dispatch(setQuestionResponse([question.id, questionResponse]));
 
-    setSelectedAnswerId(answerId);
     onAnswerChange?.(answerId);
   };
 
@@ -40,7 +39,7 @@ export const MultipleChoiceSingleValueQuestionBody: React.FC<Props> = ({
       {[...question.answers]
         .sort((a, b) => a.sortOrder - b.sortOrder)
         .map((answer) => {
-          const isSelected = selectedAnswerId === answer.id;
+          const isSelected = currentAnswerId === answer.id;
 
           return (
             <button

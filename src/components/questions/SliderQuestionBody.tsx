@@ -14,14 +14,11 @@ export const SliderQuestionBody: React.FC<Props> = ({
   question,
   onAnswerChange,
 }) => {
-  // Initialize with existing value or middle of range
-  const initialValue = question.value
-    ? parseFloat(question.value)
-    : (question.startValue + question.endValue) / 2;
-
-  const [currentValue, setCurrentValue] = useState<number>(initialValue);
+  const uiState = useAppSelector(state => state.uiState);
   const dispatch = useAppDispatch();
 
+  // Initialize with existing value or middle of range
+  const currentValue: number = uiState.currentResponses?.[question.id]?.answer ?? question.startValue;
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value);
 
@@ -31,8 +28,6 @@ export const SliderQuestionBody: React.FC<Props> = ({
       answer: value
     };
     dispatch(setQuestionResponse([question.id, questionResponse]));
-
-    setCurrentValue(value);
     onAnswerChange?.(value);
   };
 

@@ -95,3 +95,7 @@ export function getGlowShadowStyle(color: string): string {
   return `0 0 30px rgba(${rgb}, 0.2), 0 0 60px rgba(${rgb}, 0.1)`;
 }
 
+export function getRgbValue(color: string): string {
+  return COLOR_RGB_VALUES[color] || "156, 163, 175";
+}
+

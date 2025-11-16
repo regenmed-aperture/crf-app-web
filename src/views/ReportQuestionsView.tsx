@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setCurrentView, setCurrentSectionId, setCurrentQuestionId, UIView, setError } from "@/store/slices/uiStateSlice";
 import { motion, AnimatePresence, type Transition } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import type React from "react";
 import { MultipleChoiceSingleValueQuestionBody } from "@/components/questions/MultipleChoiceSingleValueQuestionBody";
 import { IncytesQuestionType, type IncytesAnalogQuestionModel, type IncytesDateQuestionModel, type IncytesMultipleValueQuestionModel, type IncytesSingleValueQuestionModel, type IncytesSingleValueAnswer, type IncytesMultipleValueAnswer} from "@/models/incytes";
@@ -15,15 +15,24 @@ import { DateQuestionBody } from "@/components/questions/DateQuestionBody";
 import { MultipleChoiceMultipleValueQuestionBody } from "@/components/questions/MultipleChoiceMultipleValueQuestionBody";
 import { Separator } from "@/components/ui/separator";
 import { QuestionsTopIsland } from "@/components/QuestionsTopIsland";
-import { getGlowShadowStyle } from "@/util/colors";
+import { getGlowShadowStyle, getRgbValue } from "@/util/colors";
 import { Badge } from "@/components/ui/badge";
 
-const answers: any[] = [];
+type QuestionAnswer = {
+  id: number;
+  answer: number | number[] | string;
+};
 
 export const ReportQuestionsView: React.FC = () => {
   const dispatch = useAppDispatch();
   const reportState = useAppSelector(state => state.reportState);
   const uiState = useAppSelector(state => state.uiState);
+
+  // Track questions whose answers were changed to track which sections are completed
+  const answersRef = useRef<QuestionAnswer[]>([]);
+  // Track which sections already have the celebration effect made so that they are not repeated.
+  const completedSectionsRef = useRef<Set<number>>(new Set());
+  const forwardSurveyMovementRef = useRef<boolean>(false);
 
   // Build flat list of all question IDs in order
   const allQuestionIds = useMemo(
@@ -43,6 +52,7 @@ export const ReportQuestionsView: React.FC = () => {
   }, []);
 
   const [showCelebration, setShowCelebration] = useState(false);
+  const [celebrationColor, setCelebrationColor] = useState<string>('');
 
   // Find which section we're in (for display only)
   const currentSection = reportState.sections.find(s => s.id === uiState.currentSectionId);
@@ -63,24 +73,39 @@ export const ReportQuestionsView: React.FC = () => {
 
   // Separate effect for section transition detection (only when section changes)
   useEffect(() => {
-    if (currentSection) {
+    if (currentSection && forwardSurveyMovementRef.current) {
       // Detect section transition (but not on first load)
-      var prevSectComplete = true;
-      previousSection?.questionIds.forEach(x => prevSectComplete = prevSectComplete && answers?.find(y => y.id === x))
-      if (previousSectionId !== null && previousSectionId < currentSection.id && prevSectComplete) {
+      const prevSectComplete = previousSection?.questionIds.every(
+        questionId => answersRef.current.some(answer => answer.id === questionId)
+      ) ?? false;
+
+      if (
+        previousSectionId !== null &&
+        previousSectionId !== currentSection.id &&
+        prevSectComplete &&
+        !completedSectionsRef.current.has(previousSectionId)
+      ) {
+        completedSectionsRef.current.add(previousSectionId);
+        setCelebrationColor(previousSection?.color || '');
         setShowCelebration(true);
         // Auto-dismiss after 1.5 seconds
         const timer = setTimeout(() => {
           setShowCelebration(false);
         }, 1500);
         return () => clearTimeout(timer);
+      } else {
+        // Hide celebration when section changes but conditions aren't met
+        setShowCelebration(false);
       }
+    } else {
+      // Hide celebration when moving backward
+      setShowCelebration(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSection?.id]); // Only depend on section ID, not the whole object
-
+  
   // Navigation handlers
-  const onNextClicked = () => {
+  const onNextClicked = useCallback(() => {
     if (!uiState.currentResponses?.hasOwnProperty(currentQuestionId) || uiState.currentResponses[currentQuestionId].answer === null){
       dispatch(setError(true));
       return;
@@ -89,6 +114,7 @@ export const ReportQuestionsView: React.FC = () => {
       dispatch(setError(false));
     }
 
+    forwardSurveyMovementRef.current = true;
     if (currentIndex < allQuestionIds.length - 1) {
       const nextQuestionId = allQuestionIds[currentIndex + 1];
       const nextSectionId = reportState.sections.find(s => s.questionIds.includes(nextQuestionId))?.id;
@@ -96,9 +122,10 @@ export const ReportQuestionsView: React.FC = () => {
       dispatch(setCurrentQuestionId(nextQuestionId));
       dispatch(setCurrentSectionId(nextSectionId ? nextSectionId : null));
     }
-  };
+  }, [currentIndex, allQuestionIds, reportState.sections, dispatch]);
 
-  const onPrevClicked = () => {
+  const onPrevClicked = useCallback(() => {
+    forwardSurveyMovementRef.current = false;
     if (currentIndex > 0) {
       const previousQuestionId = allQuestionIds[currentIndex - 1];
       const previousSectionId = reportState.sections.find(s => s.questionIds.includes(previousQuestionId))?.id;
@@ -107,9 +134,9 @@ export const ReportQuestionsView: React.FC = () => {
       dispatch(setCurrentQuestionId(previousQuestionId));
       dispatch(setCurrentSectionId(previousSectionId ? previousSectionId : null));
     }
-  };
+  }, [currentIndex, allQuestionIds, reportState.sections, dispatch]);
 
-  const onFinishClicked = () => {
+  const onFinishClicked = useCallback(() => {
     if (!uiState.currentResponses?.hasOwnProperty(currentQuestionId) || uiState.currentResponses[currentQuestionId].answer === null){
       dispatch(setError(true));
       return;
@@ -121,6 +148,13 @@ export const ReportQuestionsView: React.FC = () => {
     dispatch(setCurrentView(UIView.VIEW_RESULTS));
     dispatch(setCurrentQuestionId(null));
     dispatch(setCurrentSectionId(null));
+  }, [dispatch]);
+
+  const handleAnswerChange = (questionId: number, answer: QuestionAnswer['answer']) => {
+    // Remove any existing answer for this question
+    answersRef.current = answersRef.current.filter(a => a.id !== questionId);
+    // Add the new answer
+    answersRef.current.push({ id: questionId, answer });
   };
 
   const transition: Transition = {
@@ -174,7 +208,7 @@ export const ReportQuestionsView: React.FC = () => {
       <div className="w-full h-full flex justify-center items-center relative overflow-hidden">
         {/* Celebration Animation Overlay - Minimal & Sleek */}
         <AnimatePresence>
-          {showCelebration && currentSection && (
+          {showCelebration && celebrationColor && (
             <>
               {/* Subtle radial pulse - no backdrop blur */}
               <motion.div
@@ -189,14 +223,14 @@ export const ReportQuestionsView: React.FC = () => {
                   <motion.div
                     key={delay}
                     className="absolute w-32 h-32 border-4 rounded-full"
-                    style={{ borderColor: `${currentSection.color}40` }}
+                    style={{ borderColor: `rgba(${getRgbValue(celebrationColor)}, 0.25)` }}
                     initial={{ scale: 0, opacity: 0.8 }}
                     animate={{ scale: 8, opacity: 0 }}
                     transition={{ duration: 1, delay, ease: "easeOut" }}
                   />
                 ))}
               </motion.div>
-              
+
               {/* Minimal emoji particles - fewer, more subtle */}
               {['✨', '⭐', '✨', '⭐'].map((emoji, i) => (
                 <motion.div
@@ -215,7 +249,7 @@ export const ReportQuestionsView: React.FC = () => {
                   {emoji}
                 </motion.div>
               ))}
-              
+
               {/* Sleek minimal toast notification */}
               <motion.div
                 className="absolute top-24 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
@@ -224,9 +258,9 @@ export const ReportQuestionsView: React.FC = () => {
                 exit={{ opacity: 0, y: -20, scale: 0.9 }}
                 transition={{ type: "spring", damping: 20, stiffness: 300 }}
               >
-                <div 
+                <div
                   className="bg-white/95 backdrop-blur-md rounded-full px-6 py-3 shadow-lg border flex items-center gap-3"
-                  style={{ borderColor: currentSection.color }}
+                  style={{ borderColor: `rgb(${getRgbValue(celebrationColor)})` }}
                 >
                   <motion.span
                     className="text-xl"
@@ -238,9 +272,9 @@ export const ReportQuestionsView: React.FC = () => {
                   <span className="font-medium text-sm text-gray-700">
                     Section Complete
                   </span>
-                  <div 
+                  <div
                     className="w-2 h-2 rounded-full"
-                    style={{ backgroundColor: currentSection.color }}
+                    style={{ backgroundColor: `rgb(${getRgbValue(celebrationColor)})` }}
                   />
                 </div>
               </motion.div>
@@ -310,22 +344,22 @@ export const ReportQuestionsView: React.FC = () => {
                   {currentQuestion.questionType === IncytesQuestionType.SingleValue ? (
                     <MultipleChoiceSingleValueQuestionBody
                       question={currentQuestion as IncytesSingleValueQuestionModel}
-                      onAnswerChange={(response) => answers.push({id:currentQuestion.id,answer:response})}
+                      onAnswerChange={(response) => handleAnswerChange(currentQuestion.id!, response)}
                     />
                   ) : currentQuestion.questionType === IncytesQuestionType.Analog ? (
                     <SliderQuestionBody
                       question={currentQuestion as IncytesAnalogQuestionModel}
-                      onAnswerChange={(response) => answers.push({id:currentQuestion.id,answer:response})}
+                      onAnswerChange={(response) => handleAnswerChange(currentQuestion.id!, response)}
                     />
                   ) : currentQuestion.questionType === IncytesQuestionType.Date ? (
                     <DateQuestionBody
                       question={currentQuestion as IncytesDateQuestionModel}
-                      onAnswerChange={(response) => answers.push({id:currentQuestion.id,answer:response})}
+                      onAnswerChange={(response) => handleAnswerChange(currentQuestion.id!, response)}
                     />
                   ) : currentQuestion.questionType === IncytesQuestionType.MultipleValue ? (
                     <MultipleChoiceMultipleValueQuestionBody
                       question={currentQuestion as IncytesMultipleValueQuestionModel}
-                      onAnswerChange={(response) => answers.push({id:currentQuestion.id,answer:response})}
+                      onAnswerChange={(response) => handleAnswerChange(currentQuestion.id!, response)}
                     />
                   ) : null}
                 </div>

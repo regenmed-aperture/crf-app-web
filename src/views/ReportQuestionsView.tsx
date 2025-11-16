@@ -18,18 +18,11 @@ import { QuestionsTopIsland } from "@/components/QuestionsTopIsland";
 import { getGlowShadowStyle, getRgbValue } from "@/util/colors";
 import { Badge } from "@/components/ui/badge";
 
-type QuestionAnswer = {
-  id: number;
-  answer: number | number[] | string;
-};
-
 export const ReportQuestionsView: React.FC = () => {
   const dispatch = useAppDispatch();
   const reportState = useAppSelector(state => state.reportState);
   const uiState = useAppSelector(state => state.uiState);
 
-  // Track questions whose answers were changed to track which sections are completed
-  const answersRef = useRef<QuestionAnswer[]>([]);
   // Track which sections already have the celebration effect made so that they are not repeated.
   const completedSectionsRef = useRef<Set<number>>(new Set());
   const forwardSurveyMovementRef = useRef<boolean>(false);
@@ -76,7 +69,7 @@ export const ReportQuestionsView: React.FC = () => {
     if (currentSection && forwardSurveyMovementRef.current) {
       // Detect section transition (but not on first load)
       const prevSectComplete = previousSection?.questionIds.every(
-        questionId => answersRef.current.some(answer => answer.id === questionId)
+        questionId => uiState.currentResponses?.hasOwnProperty(questionId) && uiState.currentResponses[questionId].answer !== null
       ) ?? false;
 
       if (
@@ -160,12 +153,6 @@ export const ReportQuestionsView: React.FC = () => {
     dispatch(setCurrentSectionId(null));
   }, [dispatch, currentQuestionId, uiState.currentResponses]);
 
-  const handleAnswerChange = (questionId: number, answer: QuestionAnswer['answer']) => {
-    // Remove any existing answer for this question
-    answersRef.current = answersRef.current.filter(a => a.id !== questionId);
-    // Add the new answer
-    answersRef.current.push({ id: questionId, answer });
-  };
 
   const transition: Transition = {
     type: "tween",
@@ -326,7 +313,7 @@ export const ReportQuestionsView: React.FC = () => {
             animate={{ opacity: 1 }}
             transition={transition}
           >
-            <Card 
+            <Card
               className="min-h-[300px] py-4 flex flex-col gap-4 rounded-lg border-2 overflow-hidden relative"
               style={{
                 boxShadow: currentSection ? getGlowShadowStyle(currentSection.color) : undefined,
@@ -354,66 +341,64 @@ export const ReportQuestionsView: React.FC = () => {
                   {currentQuestion.questionType === IncytesQuestionType.SingleValue ? (
                     <MultipleChoiceSingleValueQuestionBody
                       question={currentQuestion as IncytesSingleValueQuestionModel}
-                      onAnswerChange={(response) => handleAnswerChange(currentQuestion.id!, response)}
                     />
                   ) : currentQuestion.questionType === IncytesQuestionType.Analog ? (
                     <SliderQuestionBody
                       question={currentQuestion as IncytesAnalogQuestionModel}
-                      onAnswerChange={(response) => handleAnswerChange(currentQuestion.id!, response)}
                     />
                   ) : currentQuestion.questionType === IncytesQuestionType.Date ? (
                     <DateQuestionBody
                       question={currentQuestion as IncytesDateQuestionModel}
-                      onAnswerChange={(response) => handleAnswerChange(currentQuestion.id!, response)}
                     />
                   ) : currentQuestion.questionType === IncytesQuestionType.MultipleValue ? (
                     <MultipleChoiceMultipleValueQuestionBody
                       question={currentQuestion as IncytesMultipleValueQuestionModel}
-                      onAnswerChange={(response) => handleAnswerChange(currentQuestion.id!, response)}
                     />
                   ) : null}
                 </div>
-                {/** Error alert */}
-                <AnimatePresence>
-                  {uiState.error && (
-                    <motion.div
-                      initial={{ 
-                        opacity: 0, 
-                        y: -20,
-                        rotate: 0 
-                      }}
-                      animate={{ 
-                        opacity: 1, 
-                        y: 0,
-                        rotate: [0, -3, 3, -3, 3, -2, 2, -1, 1, 0], // Dangling oscillation
-                      }}
-                      exit={{ 
-                        opacity: 0, 
-                        y: -20,
-                        rotate: 0 
-                      }}
-                      transition={{
-                        opacity: { duration: 0.2 },
-                        y: { duration: 0.3 },
-                        rotate: { 
-                          duration: 1.2,
-                          ease: "easeOut",
-                          times: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1] // Control timing of each rotation
-                        }
-                      }}
-                      style={{
-                        transformOrigin: 'top center'
-                      }}
-                    >
-                      <Alert variant="destructive" className="bg-[#fee] text-red-600 border-1 border-solid border-[#fcc]">
-                        <AlertTriangleIcon></AlertTriangleIcon>
-                        <AlertTitle>Please select an anwser before proceeding to the next question</AlertTitle>
-                      </Alert>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </CardContent>  
+              </CardContent>
             </Card>
+
+            <div className="absolute top-full left-0 right-0 mt-6 min-h-[64px]">
+              <AnimatePresence>
+                {uiState.error && (
+                  <motion.div
+                    initial={{
+                      opacity: 0,
+                      y: -20,
+                      rotate: 0
+                    }}
+                    animate={{
+                      opacity: 1,
+                      y: 0,
+                      rotate: [0, -3, 3, -3, 3, -2, 2, -1, 1, 0], // Dangling oscillation
+                    }}
+                    exit={{
+                      opacity: 0,
+                      y: -20,
+                      rotate: 0
+                    }}
+                    transition={{
+                      opacity: { duration: 0.2 },
+                      y: { duration: 0.3 },
+                      rotate: {
+                        duration: 1.2,
+                        ease: "easeOut",
+                        times: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1] // Control timing of each rotation
+                      }
+                    }}
+                    style={{
+                      transformOrigin: 'top center'
+                    }}
+                  >
+                    <Alert variant="destructive" className="bg-[#fee] text-red-600 border-1 border-solid border-[#fcc]">
+                      <AlertTriangleIcon></AlertTriangleIcon>
+                      <AlertTitle>Please select an anwser before proceeding to the next question</AlertTitle>
+                    </Alert>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </motion.div>
 
           {/* Next card */}

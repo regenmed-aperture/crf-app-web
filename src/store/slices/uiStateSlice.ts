@@ -1,6 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { fetchPatientReportData, initializePatientReportSession } from "./reportStateSlice";
-import type { IncytesQuestionAnswerModel } from "@/models/incytes";
 
 const SLICE_NAME = 'uiState';
 

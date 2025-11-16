@@ -6,7 +6,7 @@ import { motion, AnimatePresence, type Transition } from "framer-motion";
 import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import type React from "react";
 import { MultipleChoiceSingleValueQuestionBody } from "@/components/questions/MultipleChoiceSingleValueQuestionBody";
-import { IncytesQuestionType, type IncytesAnalogQuestionModel, type IncytesDateQuestionModel, type IncytesMultipleValueQuestionModel, type IncytesSingleValueQuestionModel, type IncytesSingleValueAnswer, type IncytesMultipleValueAnswer} from "@/models/incytes";
+import { IncytesQuestionType, type IncytesAnalogQuestionModel, type IncytesDateQuestionModel, type IncytesMultipleValueQuestionModel, type IncytesSingleValueQuestionModel } from "@/models/incytes";
 import { Kbd } from "@/components/ui/kbd";
 import { SliderQuestionBody } from "@/components/questions/SliderQuestionBody";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -106,6 +106,11 @@ export const ReportQuestionsView: React.FC = () => {
   
   // Navigation handlers
   const onNextClicked = useCallback(() => {
+    if (currentQuestionId === null || currentQuestionId === undefined) {
+      dispatch(setError(true));
+      return;
+    }
+
     if (!uiState.currentResponses?.hasOwnProperty(currentQuestionId) || uiState.currentResponses[currentQuestionId].answer === null){
       dispatch(setError(true));
       return;
@@ -122,7 +127,7 @@ export const ReportQuestionsView: React.FC = () => {
       dispatch(setCurrentQuestionId(nextQuestionId));
       dispatch(setCurrentSectionId(nextSectionId ? nextSectionId : null));
     }
-  }, [currentIndex, allQuestionIds, reportState.sections, dispatch]);
+  }, [currentIndex, allQuestionIds, reportState.sections, dispatch, currentQuestionId, uiState.currentResponses]);
 
   const onPrevClicked = useCallback(() => {
     forwardSurveyMovementRef.current = false;
@@ -137,6 +142,11 @@ export const ReportQuestionsView: React.FC = () => {
   }, [currentIndex, allQuestionIds, reportState.sections, dispatch]);
 
   const onFinishClicked = useCallback(() => {
+    if (currentQuestionId === null || currentQuestionId === undefined) {
+      dispatch(setError(true));
+      return;
+    }
+
     if (!uiState.currentResponses?.hasOwnProperty(currentQuestionId) || uiState.currentResponses[currentQuestionId].answer === null){
       dispatch(setError(true));
       return;
@@ -148,7 +158,7 @@ export const ReportQuestionsView: React.FC = () => {
     dispatch(setCurrentView(UIView.VIEW_RESULTS));
     dispatch(setCurrentQuestionId(null));
     dispatch(setCurrentSectionId(null));
-  }, [dispatch]);
+  }, [dispatch, currentQuestionId, uiState.currentResponses]);
 
   const handleAnswerChange = (questionId: number, answer: QuestionAnswer['answer']) => {
     // Remove any existing answer for this question

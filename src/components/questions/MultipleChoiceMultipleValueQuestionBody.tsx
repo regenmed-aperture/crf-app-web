@@ -4,7 +4,6 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setError, setQuestionResponse, type QuestionResponse } from "@/store/slices/uiStateSlice";
 import { Check } from "lucide-react";
 import type React from "react";
-import { useState } from "react";
 
 interface Props {
   question: IncytesMultipleValueQuestionModel;
@@ -19,8 +18,10 @@ export const MultipleChoiceMultipleValueQuestionBody: React.FC<Props> = ({
   const dispatch = useAppDispatch();
 
   // Initialize with checked answers
-  const answerIds: number[] = uiState.currentResponses?.[question.id]?.answer ?? [];
+  const answerIds: number[] = (question.id !== null ? (uiState.currentResponses?.[question.id]?.answer as number[] | undefined) : undefined) ?? [];
   const handleToggle = (answerId: number) => {
+    if (question.id === null) return;
+
     const newSelection = answerIds.includes(answerId)
         ? answerIds.filter((id) => id !== answerId)
         : [...answerIds, answerId];

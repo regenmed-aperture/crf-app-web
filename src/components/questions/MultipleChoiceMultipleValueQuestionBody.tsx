@@ -1,8 +1,9 @@
 import { cn } from "@/lib/utils";
 import type { IncytesMultipleValueQuestionModel } from "@/models/incytes";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { setError, setQuestionResponse, type QuestionResponse } from "@/store/slices/uiStateSlice";
 import { Check } from "lucide-react";
 import type React from "react";
-import { useState } from "react";
 
 interface Props {
   question: IncytesMultipleValueQuestionModel;
@@ -13,22 +14,30 @@ export const MultipleChoiceMultipleValueQuestionBody: React.FC<Props> = ({
   question,
   onAnswerChange,
 }) => {
+  const uiState = useAppSelector(state => state.uiState);
+  const dispatch = useAppDispatch();
+
   // Initialize with checked answers
-  const initialAnswerIds = question.answers
-    .filter((a) => a.checked)
-    .map((a) => a.id);
-
-  const [selectedAnswerIds, setSelectedAnswerIds] = useState<number[]>(initialAnswerIds);
-
+  const answerIds: number[] = (question.id !== null ? (uiState.currentResponses?.[question.id]?.answer as number[] | undefined) : undefined) ?? [];
   const handleToggle = (answerId: number) => {
-    setSelectedAnswerIds((prev) => {
-      const newSelection = prev.includes(answerId)
-        ? prev.filter((id) => id !== answerId)
-        : [...prev, answerId];
+    if (question.id === null) return;
+
+    const newSelection = answerIds.includes(answerId)
+        ? answerIds.filter((id) => id !== answerId)
+        : [...answerIds, answerId];
+
+      console.log(newSelection.length > 0 ? newSelection : null);
+
+      // Update changes back to the ui state
+      const questionResponse: QuestionResponse = {
+        questionId: question.id,
+        questionType: question.questionType,
+        answer: newSelection.length > 0 ? newSelection : null
+      };
+      dispatch(setError(false));
+      dispatch(setQuestionResponse([question.id, questionResponse]));
 
       onAnswerChange?.(newSelection);
-      return newSelection;
-    });
   };
 
   const sortedAnswers = [...question.answers].sort((a, b) => a.sortOrder - b.sortOrder);
@@ -44,7 +53,7 @@ export const MultipleChoiceMultipleValueQuestionBody: React.FC<Props> = ({
       )}
     >
       {sortedAnswers.map((answer) => {
-        const isSelected = selectedAnswerIds.includes(answer.id);
+        const isSelected = answerIds.includes(answer.id);
 
         return (
           <button

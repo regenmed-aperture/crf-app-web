@@ -1,7 +1,8 @@
 import { cn } from "@/lib/utils";
 import type { IncytesAnalogQuestionModel } from "@/models/incytes";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { setError, setQuestionResponse, type QuestionResponse } from "@/store/slices/uiStateSlice";
 import type React from "react";
-import { useState } from "react";
 
 interface Props {
   question: IncytesAnalogQuestionModel;
@@ -12,16 +13,24 @@ export const SliderQuestionBody: React.FC<Props> = ({
   question,
   onAnswerChange,
 }) => {
+  const uiState = useAppSelector(state => state.uiState);
+  const dispatch = useAppDispatch();
+
   // Initialize with existing value or middle of range
-  const initialValue = question.value
-    ? parseFloat(question.value)
-    : (question.startValue + question.endValue) / 2;
-
-  const [currentValue, setCurrentValue] = useState<number>(initialValue);
-
+  const currentValue: number = (question.id !== null ? (uiState.currentResponses?.[question.id]?.answer as number | undefined) : undefined) ?? question.startValue;
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (question.id === null) return;
+
     const value = parseFloat(e.target.value);
-    setCurrentValue(value);
+
+    const questionResponse: QuestionResponse = {
+      questionId: question.id,
+      questionType: question.questionType,
+      answer: value
+    };
+
+    dispatch(setError(false));
+    dispatch(setQuestionResponse([question.id, questionResponse]));
     onAnswerChange?.(value);
   };
 

@@ -1,8 +1,9 @@
 import { cn } from "@/lib/utils";
 import type { IncytesSingleValueQuestionModel } from "@/models/incytes";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { setError, setQuestionResponse, type QuestionResponse } from "@/store/slices/uiStateSlice";
 import { Circle, CircleCheck } from "lucide-react";
 import type React from "react";
-import { useState } from "react";
 
 interface Props {
   question: IncytesSingleValueQuestionModel;
@@ -13,12 +14,23 @@ export const MultipleChoiceSingleValueQuestionBody: React.FC<Props> = ({
   question,
   onAnswerChange,
 }) => {
-  // Find initially checked answer or null
-  const initialAnswer = question.answers.find((a) => a.checked)?.id ?? null;
-  const [selectedAnswerId, setSelectedAnswerId] = useState<number | null>(initialAnswer);
+  const uiState = useAppSelector(state => state.uiState);
+  const dispatch = useAppDispatch();
 
+  // Find initially checked answer or null
+  const currentAnswerId: number | null = (question.id !== null ? (uiState.currentResponses?.[question.id]?.answer as number | undefined) : undefined) ?? null;
   const handleSelect = (answerId: number) => {
-    setSelectedAnswerId(answerId);
+    if (question.id === null) {
+      return;
+    }
+    const questionResponse: QuestionResponse = {
+      questionId: question.id,
+      questionType: question.questionType,
+      answer: answerId
+    };
+    dispatch(setError(false));
+    dispatch(setQuestionResponse([question.id, questionResponse]));
+
     onAnswerChange?.(answerId);
   };
 
@@ -27,7 +39,7 @@ export const MultipleChoiceSingleValueQuestionBody: React.FC<Props> = ({
       {[...question.answers]
         .sort((a, b) => a.sortOrder - b.sortOrder)
         .map((answer) => {
-          const isSelected = selectedAnswerId === answer.id;
+          const isSelected = currentAnswerId === answer.id;
 
           return (
             <button

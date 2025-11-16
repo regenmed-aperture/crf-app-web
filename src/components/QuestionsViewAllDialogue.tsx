@@ -6,7 +6,7 @@ import { Progress } from "./ui/progress";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useMemo, useState } from "react";
-import { setCurrentQuestionId, setCurrentSectionId } from "@/store/slices/uiStateSlice";
+import { setCurrentQuestionId, setCurrentSectionId, setError } from "@/store/slices/uiStateSlice";
 import { cn } from "@/lib/utils";
 import { getBgColorTWClass } from "@/util/colors";
 
@@ -23,6 +23,15 @@ export const QuestionsViewAllDialogue: React.FC<Props> = ({ children }) => {
   const [open, setOpen] = useState(false);
 
   const currentIndex = allQuestionIds.findIndex(questionId => questionId === uiState.currentQuestionId);
+
+  // Find the index of the first unanswered question
+  const firstUnansweredIndex = useMemo(() => {
+    return allQuestionIds.findIndex(questionId => {
+      const isAnswered = uiState.currentResponses?.hasOwnProperty(questionId) && uiState.currentResponses[questionId].answer !== null;
+      return !isAnswered;
+    });
+  }, [allQuestionIds, uiState.currentResponses]);
+  
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -54,20 +63,28 @@ export const QuestionsViewAllDialogue: React.FC<Props> = ({ children }) => {
                   {section.questionIds.map((questionId) => {
                     const question = reportState.questions[questionId];
                     const index = allQuestionIds.indexOf(questionId);
-                    
+                    const isAnswered = uiState.currentResponses?.hasOwnProperty(questionId) && uiState.currentResponses[questionId].answer !== null;
+                    const isCurrent = index === currentIndex;
+
+                    // Allow navigation only if:
+                    // 1. It's the current question, OR
+                    // 2. The question is answered AND it's before the first unanswered question (or all questions are answered)
+                    const canNavigate = isCurrent || (isAnswered && (firstUnansweredIndex === -1 || index < firstUnansweredIndex));
+
                     return (
                       <Button
                         key={question.id}
                         variant="outline"
                         className={cn([
                           "w-full h-16 gap-0",
-                          index > currentIndex ? "opacity-20" : "hover:cursor-pointer"
+                          !canNavigate ? "opacity-20" : "hover:cursor-pointer"
                         ])}
                         onClick={() => {
-                          if (index > currentIndex) {
+                          if (!canNavigate) {
                             return;
                           }
 
+                          dispatch(setError(false));
                           dispatch(setCurrentQuestionId(questionId));
                           dispatch(setCurrentSectionId(section.id));
                           setOpen(false);

@@ -13,16 +13,27 @@ export enum UIView {
   VIEW_NOT_FOUND,
 }
 
+
+export interface QuestionResponse {
+  questionId: number,
+  questionType: number,
+  answer: unknown
+};
+
 export interface UIState {
   currentView: UIView,
   currentSectionId: number | null,
   currentQuestionId?: number | null,
+  currentResponses: Record<number, QuestionResponse> | null,
+  error: boolean
 }
 
 const initialState: UIState = {
   currentView: UIView.VIEW_AUTH,
   currentSectionId: null,
   currentQuestionId: null,
+  currentResponses: null,
+  error: false
 };
 
 export const uiStateSlice = createSlice({
@@ -47,6 +58,32 @@ export const uiStateSlice = createSlice({
         currentQuestionId: action.payload
       };
     },
+    setQuestionResponse(state, action: PayloadAction<[number, QuestionResponse]>) {
+      const [questionId, response] = action.payload;
+      if (!state.currentResponses){
+        return {
+          ...state,
+          currentResponses: {
+            [questionId]: response
+          }
+        }
+      }
+      else {
+        return {
+          ...state,
+          currentResponses: {
+            ...state.currentResponses,
+            [questionId]: response
+          }
+        }
+      }
+    },
+    setError(state, action: PayloadAction<boolean>){
+      return {
+        ...state,
+        error: action.payload
+      }
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -65,4 +102,6 @@ export const {
   setCurrentView,
   setCurrentSectionId,
   setCurrentQuestionId,
+  setQuestionResponse,
+  setError
  } = uiStateSlice.actions;

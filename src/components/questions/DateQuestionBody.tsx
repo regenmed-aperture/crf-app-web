@@ -2,7 +2,8 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import type { IncytesDateQuestionModel } from "@/models/incytes";
 import type React from "react";
-import { useState } from "react";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { setError, setQuestionResponse, type QuestionResponse } from "@/store/slices/uiStateSlice";
 
 interface Props {
   question: IncytesDateQuestionModel;
@@ -13,11 +14,22 @@ export const DateQuestionBody: React.FC<Props> = ({
   question,
   onAnswerChange,
 }) => {
-  const [dateValue, setDateValue] = useState<string>(question.value || "");
+  const uiState = useAppSelector(state => state.uiState);
+  const dispatch = useAppDispatch();
 
+  const dateValue: string = (question.id !== null ? (uiState.currentResponses?.[question.id]?.answer as string | undefined) : undefined) ?? question.value;
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (question.id === null) return;
+
     const value = e.target.value;
-    setDateValue(value);
+    const questionRespose: QuestionResponse = {
+      questionId: question.id,
+      questionType: question.questionType,
+      answer: value
+    };
+
+    dispatch(setError(false));
+    dispatch(setQuestionResponse([question.id, questionRespose]));
     onAnswerChange?.(value);
   };
 

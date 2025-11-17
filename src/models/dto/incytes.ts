@@ -1,4 +1,4 @@
-import type { IncytesAnsweredQuestionsModel, IncytesUserModel } from "../incytes";
+import type { IncytesAnsweredQuestionsModel, IncytesQuestionAnswerModel, IncytesUserModel } from "../incytes";
 
 export interface IncytesResponseModel {
   isSuccessful: boolean;

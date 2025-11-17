@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import { fetchPatientReportData, initializePatientReportSession } from "./reportStateSlice";
+import { fetchPatientReportData, initializePatientReportSession, submitPatientReport } from "./reportStateSlice";
 
 const SLICE_NAME = 'uiState';
 
@@ -13,7 +13,15 @@ export enum UIView {
   VIEW_NOT_FOUND,
 }
 
-
+/**
+ * Represents a model of question answer. For different types of questions, 
+ * answer has different values
+ * 
+ * 1. Multi choice question - array of choice id
+ * 2. Single choice question - single choice id
+ * 3. Date question - date object
+ * 4. Slider question - value of the slider (int)
+ */
 export interface QuestionResponse {
   questionId: number,
   questionType: number,
@@ -94,6 +102,16 @@ export const uiStateSlice = createSlice({
         if (state.currentQuestionId) {
           state.currentView = UIView.VIEW_QUESTIONS;
         }
+      })
+      .addCase(submitPatientReport.fulfilled, (state) => {
+        return {
+          ...state,
+          currentView: UIView.VIEW_RESULTS,
+          currentResponses: null,
+          currentQuestionId: null,
+          currentSectionId: null,
+          error: false
+        };
       })
   },
 });

@@ -17,6 +17,7 @@ import { Separator } from "@/components/ui/separator";
 import { QuestionsTopIsland } from "@/components/QuestionsTopIsland";
 import { getGlowShadowStyle, getRgbValue } from "@/util/colors";
 import { Badge } from "@/components/ui/badge";
+import { submitPatientReport } from "@/store/slices/reportStateSlice";
 
 export const ReportQuestionsView: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -148,9 +149,11 @@ export const ReportQuestionsView: React.FC = () => {
       dispatch(setError(false));
     }
 
-    dispatch(setCurrentView(UIView.VIEW_RESULTS));
-    dispatch(setCurrentQuestionId(null));
-    dispatch(setCurrentSectionId(null));
+    dispatch(submitPatientReport({
+      instanceId: reportState.instanceId,
+      encodedReportId: reportState.encodedReportId,
+      questionResponses: uiState.currentResponses
+    }));
   }, [dispatch, currentQuestionId, uiState.currentResponses]);
 
 

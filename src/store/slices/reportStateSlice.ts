@@ -2,21 +2,26 @@ import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/tool
 import type { ReportQuestion, ReportQuestionResponse, ReportSection } from "../../models/report";
 import { observationalProtocolService } from "../../services/observationalProtocolService";
 import { userService } from "@/services/userService";
-import { decodeReportToken } from "@/util/token";
+import { decodeReportToken, type ReportTokenData } from "@/util/token";
 import { randomIntFromInterval } from "@/util/math";
 import { getSectionColor } from "@/util/colors";
-import type { IncytesUserModel } from "@/models/incytes";
-import type { IncytesPatientSurveyNavigationModel } from "@/models/dto/incytes";
+import { IncytesQuestionType, type IncytesAnsweredQuestionsModel, type IncytesQuestionAnswerModel, type IncytesUserModel } from "@/models/incytes";
+import type { IncytesAddBilateralAnswerModel, IncytesPatientSurveyNavigationModel } from "@/models/dto/incytes";
+import type { QuestionResponse } from "./uiStateSlice";
+import { act } from "react";
 
 const SLICE_NAME = 'reportState';
 
 export interface ReportState {
+  isSubmittingData: boolean,
+  submitError: string | null,
   isFetchingData: boolean,
   fetchError: string | null,
 
   user: IncytesUserModel | null,
 
   encodedReportId: string | null,
+  instanceId: string | null,
   sections: ReportSection[],
   questions: Record<string, ReportQuestion>,
   responses: Record<string, ReportQuestionResponse>,
@@ -27,12 +32,15 @@ export interface ReportState {
 }
 
 const initialState: ReportState = {
+  isSubmittingData: false,
+  submitError: null,
   isFetchingData: true,
   fetchError: null,
 
   user: null,
 
   encodedReportId: null,
+  instanceId: null,
   sections: [],
   questions: {},
   responses: {},
@@ -85,11 +93,55 @@ export const fetchPatientReportData = createAsyncThunk(
     });
 
     return {
+      instanceId: data.answeredQuestions[0].patientCaseSurveyInstanceId.toString(),
       encodedReportId,
       sections: sections,
       questions: questionsObj,
       navigation: navigationData,
     };
+  }
+);
+
+export const submitPatientReport = createAsyncThunk(
+  `${SLICE_NAME}/submitPatientReport`,
+  async ({ instanceId, encodedReportId, questionResponses }: { instanceId: string, encodedReportId: string, questionResponses: Record<string, QuestionResponse> }) => {
+    const dtoQuestions: IncytesQuestionAnswerModel[] = [];
+    for (const response of Object.values(questionResponses)) {
+      switch (response.questionType) {  
+        // If multiple value question, create separate DTO entries for each answer
+        case IncytesQuestionType.MultipleValue: {
+          const multipleAnswers: number[] = response.answer as number[];
+          for (const answer of multipleAnswers){
+            const dtoQuestion: IncytesQuestionAnswerModel = {
+              questionId: response.questionId,
+              questionType: response.questionType,
+              answer: answer.toString()
+            }
+            dtoQuestions.push(dtoQuestion);
+          }
+          break;
+        }
+        default: {
+          const dtoQuestion: IncytesQuestionAnswerModel = {
+            questionId: response.questionId,
+            questionType: response.questionType,
+            answer: response.answer?.toString() ?? ""
+          }
+          dtoQuestions.push(dtoQuestion);
+          break;
+        }
+      }
+    }
+
+    const tokenData = decodeReportToken(encodedReportId); 
+    const response: boolean = await observationalProtocolService.submitSurvey(
+      tokenData.caseId,
+      tokenData.observationProtocolSurveyId,
+      instanceId,
+      tokenData.surveyId,
+      dtoQuestions
+    );
+    return response;
   }
 );
 
@@ -134,8 +186,16 @@ export const reportStateSlice = createSlice({
         state.navigation = action.payload.navigation;
         state.displayTitle = (action.payload.navigation.surveyTitle ?? "Patient 2-Week Post Operative").replace("Survey", "");
         state.responses = {};
+        state.instanceId = action.payload.instanceId;
 
         state.remainingSecondsToCompleteEstimate = Object.keys(state.questions).length * 20;
+      })
+      .addCase(submitPatientReport.pending, (state) => {
+        state.isSubmittingData = true;
+      })
+      .addCase(submitPatientReport.fulfilled, (state, action) => {
+        state.isSubmittingData = false;
+        state.submitError = action.payload.toString();
       })
   },
 });

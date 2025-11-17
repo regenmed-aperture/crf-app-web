@@ -1,4 +1,5 @@
-import type { IncytesBilateralQuestionCollectionResponseModel, IncytesPatientSurveyNavigationModel } from "@/models/dto/incytes";
+import type { IncytesAddBilateralAnswerModel, IncytesBilateralQuestionCollectionResponseModel, IncytesPatientSurveyNavigationModel } from "@/models/dto/incytes";
+import type { IncytesQuestionAnswerModel } from "@/models/incytes";
 
 // rn in dev env this is handled by the vite proxy config
 // const BASE_URL = "demo-patient.incytesapp.co";
@@ -22,4 +23,23 @@ export const observationalProtocolService = {
 
     return data;
   },
+
+  /**
+   * Submit survey answers
+   *
+   * @param caseId - case ID
+   * @param protocolId - observational protocol ID
+   * @param instanceId - protocol instance ID
+   * @param surveyId - survey ID
+   * @param questionAnswerSides - AddBilateralAnswerModel model containing answers
+   * @returns  response containing next survey data if any
+  */
+  async submitSurvey(caseId: string, protocolId: string, instanceId: string, surveyId: string, questionAnswerSides: IncytesQuestionAnswerModel[]): Promise<boolean> {
+    const response = await fetch(`/api/survey/${caseId}/${protocolId}/${instanceId}/${surveyId}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ questionAnswerSides: { questionAnswers: questionAnswerSides} })
+    });
+    return response.status === 200;
+  }
 }

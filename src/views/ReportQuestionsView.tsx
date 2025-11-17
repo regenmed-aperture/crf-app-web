@@ -418,7 +418,7 @@ export const ReportQuestionsView: React.FC = () => {
             )}
           </AnimatePresence>
         </div>
-        <div className="absolute w-full max-w-xl left-1/2 -translate-x-1/2 bottom-[100px] flex flex-row justify-between items-center gap-1">
+        <div className="absolute w-full max-w-xl left-1/2 -translate-x-1/2 bottom-[100px] flex flex-row justify-between items-center gap-1 z-50">
           <motion.div
             whileHover={!isFirstQuestion ? { scale: 1.05 } : {}}
             whileTap={!isFirstQuestion ? { scale: 0.95 } : {}}

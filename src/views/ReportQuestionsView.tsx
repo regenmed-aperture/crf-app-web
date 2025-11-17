@@ -418,7 +418,7 @@ export const ReportQuestionsView: React.FC = () => {
             )}
           </AnimatePresence>
         </div>
-        <div className="absolute w-full max-w-xl left-1/2 -translate-x-1/2 bottom-[100px] flex flex-row justify-between items-center gap-1">
+        <div className="absolute w-full max-w-xl left-1/2 -translate-x-1/2 bottom-[100px] flex flex-row justify-between items-center gap-1 z-50">
           <Button
             variant={"outline"}
             className="h-12 w-36 flex flex-row justify-between items-center"

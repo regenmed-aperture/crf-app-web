@@ -142,17 +142,12 @@ export const submitPatientReport = createAsyncThunk(
     console.log(instanceVersionId);
     const tokenData = decodeReportToken(encodedReportId); 
     const singleSide: IncytesPatientCaseSurveySide = {
-      patientCaseSurveyInstanceId: patient.surveyInstanceId,
-      patientCaseSurveyInstanceVersion: parseInt(instanceVersionId),            // Not really sure how to find instance version
+      patientCaseSurveyInstanceId: 0,
+      patientCaseSurveyInstanceVersion: 0,            // Not really sure how to find instance version
       bilateralAreaId: 0,                             // We ignore bilateral area here and mix all areas in one
       questionAnswers: dtoQuestions
     };
-    const payload: IncytesAddBilateralAnswerModel = {
-      patientId: patient.id,
-      caseId: patient.caseId,
-      surveyId: patient.surveyId,
-      surveyInstanceId: patient.surveyInstanceId,
-      reOpened: false,
+    const payload = {
       questionAnswerSides: [singleSide]
     };
     console.log(payload);

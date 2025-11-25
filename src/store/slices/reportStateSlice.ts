@@ -135,6 +135,8 @@ export const submitPatientReport = createAsyncThunk(
         }
       }
     }
+    console.log("Question Responses I collected ");
+    console.log(dtoQuestions);
 
     console.log("Before preparing the payload");
     console.log(instanceVersionId);

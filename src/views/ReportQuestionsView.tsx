@@ -149,7 +149,6 @@ export const ReportQuestionsView: React.FC = () => {
       dispatch(setError(false));
     }
 
-    console.log("Completed " + reportState.navigation?.surveyIsCompleted);
     dispatch(submitPatientReport({
       patient: reportState.user,
       instanceId: reportState.instanceId,

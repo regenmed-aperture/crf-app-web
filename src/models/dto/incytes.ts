@@ -46,3 +46,19 @@ export interface IncytesPatientSurveyNavigationModel extends IncytesResponseMode
   nextExpiresUtc: string;
   nextDueDate: string;
 }
+
+export interface IncytesAddBilateralAnswerModel {
+  patientId: number,
+  caseId: number,
+  surveyId: number,
+  surveyInstanceId: number,
+  reOpened: boolean,
+  questionAnswerSides: IncytesPatientCaseSurveySide[]
+}
+
+export interface IncytesPatientCaseSurveySide {
+  patientCaseSurveyInstanceId: number,
+  patientCaseSurveyInstanceVersion: number,
+  bilateralAreaId: number,
+  questionAnswers: IncytesQuestionAnswerModel[]
+}

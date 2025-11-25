@@ -34,12 +34,18 @@ export const observationalProtocolService = {
    * @param questionAnswerSides - AddBilateralAnswerModel model containing answers
    * @returns  response containing next survey data if any
   */
-  async submitSurvey(caseId: string, protocolId: string, instanceId: string, surveyId: string, questionAnswerSides: IncytesQuestionAnswerModel[]): Promise<boolean> {
+  async submitSurvey(caseId: string, protocolId: string, instanceId: string, surveyId: string, payload: IncytesAddBilateralAnswerModel): Promise<boolean> {
+    console.log("Submitting response back");
     const response = await fetch(`/api/survey/${caseId}/${protocolId}/${instanceId}/${surveyId}`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ questionAnswerSides: { questionAnswers: questionAnswerSides} })
+      body: JSON.stringify(payload)
     });
+    const obj = await response.json();
+    console.log("Finished the response and received status code: " + response.status);
+    console.log(obj);
+
+
     return response.status === 200;
   }
 }

@@ -9,7 +9,8 @@ export enum UIView {
   VIEW_CONSENT,
   VIEW_QUESTIONS,
   VIEW_RESULTS,
-  
+  VIEW_LOADING,
+
   VIEW_NOT_FOUND,
 }
 
@@ -102,6 +103,9 @@ export const uiStateSlice = createSlice({
         if (state.currentQuestionId) {
           state.currentView = UIView.VIEW_QUESTIONS;
         }
+      })
+      .addCase(submitPatientReport.pending, (state) => {
+        state.currentView = UIView.VIEW_LOADING;
       })
       .addCase(submitPatientReport.fulfilled, (state) => {
         return {

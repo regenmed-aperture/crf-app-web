@@ -6,7 +6,7 @@ import { decodeReportToken, type ReportTokenData } from "@/util/token";
 import { randomIntFromInterval } from "@/util/math";
 import { getSectionColor } from "@/util/colors";
 import { IncytesQuestionType, type IncytesAnsweredQuestionsModel, type IncytesQuestionAnswerModel, type IncytesUserModel } from "@/models/incytes";
-import type { IncytesAddBilateralAnswerModel, IncytesPatientSurveyNavigationModel } from "@/models/dto/incytes";
+import type { IncytesAddBilateralAnswerModel, IncytesPatientCaseSurveySide, IncytesPatientSurveyNavigationModel } from "@/models/dto/incytes";
 import type { QuestionResponse } from "./uiStateSlice";
 import { act } from "react";
 
@@ -22,6 +22,7 @@ export interface ReportState {
 
   encodedReportId: string | null,
   instanceId: string | null,
+  instanceVersionId: string | null,
   sections: ReportSection[],
   questions: Record<string, ReportQuestion>,
   responses: Record<string, ReportQuestionResponse>,
@@ -41,6 +42,7 @@ const initialState: ReportState = {
 
   encodedReportId: null,
   instanceId: null,
+  instanceVersionId: null,
   sections: [],
   questions: {},
   responses: {},
@@ -70,7 +72,7 @@ export const fetchPatientReportData = createAsyncThunk(
 
     const sections: ReportSection[] = [];
     const questionsObj: Record<string, ReportQuestion> = {};
-    data.answeredQuestions[0].questions.forEach(q => {
+    data.answeredQuestions.forEach(bilateralArea => bilateralArea.questions.forEach(q => {
       if (!q.title) return;
 
       const questionId = q.id ?? randomIntFromInterval(10000, 99999);
@@ -90,10 +92,11 @@ export const fetchPatientReportData = createAsyncThunk(
       sections[existingIdx].questionIds.push(questionId);
 
       questionsObj[questionId] = q;
-    });
+    }));
 
     return {
       instanceId: data.answeredQuestions[0].patientCaseSurveyInstanceId.toString(),
+      instanceVersionId: data.answeredQuestions[0].patientCaseSurveyInstanceVersion.toString(),
       encodedReportId,
       sections: sections,
       questions: questionsObj,
@@ -104,7 +107,7 @@ export const fetchPatientReportData = createAsyncThunk(
 
 export const submitPatientReport = createAsyncThunk(
   `${SLICE_NAME}/submitPatientReport`,
-  async ({ instanceId, encodedReportId, questionResponses }: { instanceId: string, encodedReportId: string, questionResponses: Record<string, QuestionResponse> }) => {
+  async ({ patient, instanceId, instanceVersionId, encodedReportId, questionResponses }: { patient: IncytesUserModel, instanceId: string, instanceVersionId: string, encodedReportId: string, questionResponses: Record<string, QuestionResponse> }) => {
     const dtoQuestions: IncytesQuestionAnswerModel[] = [];
     for (const response of Object.values(questionResponses)) {
       switch (response.questionType) {  
@@ -133,13 +136,31 @@ export const submitPatientReport = createAsyncThunk(
       }
     }
 
+    console.log("Before preparing the payload");
+    console.log(instanceVersionId);
     const tokenData = decodeReportToken(encodedReportId); 
+    const singleSide: IncytesPatientCaseSurveySide = {
+      patientCaseSurveyInstanceId: patient.surveyInstanceId,
+      patientCaseSurveyInstanceVersion: parseInt(instanceVersionId),            // Not really sure how to find instance version
+      bilateralAreaId: 0,                             // We ignore bilateral area here and mix all areas in one
+      questionAnswers: dtoQuestions
+    };
+    const payload: IncytesAddBilateralAnswerModel = {
+      patientId: patient.id,
+      caseId: patient.caseId,
+      surveyId: patient.surveyId,
+      surveyInstanceId: patient.surveyInstanceId,
+      reOpened: false,
+      questionAnswerSides: [singleSide]
+    };
+    console.log(payload);
+
     const response: boolean = await observationalProtocolService.submitSurvey(
       tokenData.caseId,
       tokenData.observationProtocolSurveyId,
-      instanceId,
+      patient.surveyInstanceId.toString(),
       tokenData.surveyId,
-      dtoQuestions
+      payload
     );
     return response;
   }
@@ -187,6 +208,7 @@ export const reportStateSlice = createSlice({
         state.displayTitle = (action.payload.navigation.surveyTitle ?? "Patient 2-Week Post Operative").replace("Survey", "");
         state.responses = {};
         state.instanceId = action.payload.instanceId;
+        state.instanceVersionId = action.payload.instanceVersionId;
 
         state.remainingSecondsToCompleteEstimate = Object.keys(state.questions).length * 20;
       })

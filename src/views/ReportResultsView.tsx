@@ -5,6 +5,8 @@ import { Separator } from "@/components/ui/separator";
 import { useAppSelector } from "@/store/hooks";
 import { CheckCircle2, TrendingUp, Calendar } from "lucide-react";
 import type React from "react";
+import CountUp from "react-countup";
+import { motion } from "motion/react";
 
 export const ReportResultsView: React.FC = () => {
   const reportState = useAppSelector(state => state.reportState);
@@ -40,10 +42,10 @@ export const ReportResultsView: React.FC = () => {
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-semibold">Survey Completion Progress</p>
-                  <span className="text-2xl font-bold text-green-600">60%</span>
+                  <span className="text-2xl font-bold text-green-600"><CountUp start={0} end={60} duration={2} delay={0.5} />%</span>
                 </div>
                 <div className="w-full bg-muted rounded-full h-3">
-                  <div className="bg-green-600 h-3 rounded-full" style={{ width: '60%' }}></div>
+                  <motion.div className="bg-green-600 h-3 rounded-full" initial={{width:'0%'}} animate={{width:'60%'}} transition={{ ease:"easeOut", duration: 2}}></motion.div>
                 </div>
                 <p className="text-sm text-muted-foreground">
                   You're now among the 96 of participants that answered!
@@ -80,7 +82,7 @@ export const ReportResultsView: React.FC = () => {
                   <p className="font-semibold">Your Impact</p>
                 </div>
                 <div className="flex items-center gap-2 mt-2">
-                  <span className="text-2xl font-bold">2,847</span>
+                  <span className="text-2xl font-bold"><CountUp start={0} end={2847} separator="," duration={1} delay={0.5} /></span>
                   <p className="text-sm text-muted-foreground">patients helped by your data contributions</p>
                 </div>
               </div>

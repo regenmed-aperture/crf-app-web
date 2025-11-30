@@ -9,7 +9,6 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
-  base: '/crf-app-web/',
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

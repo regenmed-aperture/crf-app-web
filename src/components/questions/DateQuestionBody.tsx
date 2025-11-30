@@ -4,7 +4,6 @@ import type { IncytesDateQuestionModel } from "@/models/incytes";
 import type React from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setError, setQuestionResponse, type QuestionResponse } from "@/store/slices/uiStateSlice";
-import { useEffect } from "react";
 
 interface Props {
   question: IncytesDateQuestionModel;

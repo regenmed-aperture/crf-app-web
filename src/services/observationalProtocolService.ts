@@ -1,5 +1,4 @@
 import type { IncytesAddBilateralAnswerModel, IncytesBilateralQuestionCollectionResponseModel, IncytesPatientSurveyNavigationModel } from "@/models/dto/incytes";
-import type { IncytesQuestionAnswerModel } from "@/models/incytes";
 
 // rn in dev env this is handled by the vite proxy config
 // const BASE_URL = "demo-patient.incytesapp.co";

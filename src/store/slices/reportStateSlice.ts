@@ -2,13 +2,12 @@ import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/tool
 import type { ReportQuestion, ReportQuestionResponse, ReportSection } from "../../models/report";
 import { observationalProtocolService } from "../../services/observationalProtocolService";
 import { userService } from "@/services/userService";
-import { decodeReportToken, type ReportTokenData } from "@/util/token";
+import { decodeReportToken } from "@/util/token";
 import { randomIntFromInterval } from "@/util/math";
 import { getSectionColor } from "@/util/colors";
-import { IncytesQuestionType, type IncytesAnsweredQuestionsModel, type IncytesQuestionAnswerModel, type IncytesUserModel } from "@/models/incytes";
-import type { IncytesAddBilateralAnswerModel, IncytesPatientCaseSurveySide, IncytesPatientSurveyNavigationModel } from "@/models/dto/incytes";
+import { IncytesQuestionType, type IncytesQuestionAnswerModel, type IncytesUserModel } from "@/models/incytes";
+import type { IncytesPatientCaseSurveySide, IncytesPatientSurveyNavigationModel } from "@/models/dto/incytes";
 import type { QuestionResponse } from "./uiStateSlice";
-import { act } from "react";
 
 const SLICE_NAME = 'reportState';
 
@@ -107,7 +106,7 @@ export const fetchPatientReportData = createAsyncThunk(
 
 export const submitPatientReport = createAsyncThunk(
   `${SLICE_NAME}/submitPatientReport`,
-  async ({ patient, instanceId, instanceVersionId, encodedReportId, questionResponses }: { patient: IncytesUserModel, instanceId: string, instanceVersionId: string, encodedReportId: string, questionResponses: Record<string, QuestionResponse> }) => {
+  async ({ patient, encodedReportId, questionResponses }: { patient: IncytesUserModel, encodedReportId: string, questionResponses: Record<string, QuestionResponse> }) => {
     const dtoQuestions: IncytesQuestionAnswerModel[] = [];
     for (const response of Object.values(questionResponses)) {
       switch (response.questionType) {  
@@ -135,11 +134,7 @@ export const submitPatientReport = createAsyncThunk(
         }
       }
     }
-    console.log("Question Responses I collected ");
-    console.log(dtoQuestions);
 
-    console.log("Before preparing the payload");
-    console.log(instanceVersionId);
     const tokenData = decodeReportToken(encodedReportId); 
     const singleSide: IncytesPatientCaseSurveySide = {
       patientCaseSurveyInstanceId: 0,
@@ -150,7 +145,6 @@ export const submitPatientReport = createAsyncThunk(
     const payload = {
       questionAnswerSides: [singleSide]
     };
-    console.log(payload);
 
     const response: boolean = await observationalProtocolService.submitSurvey(
       tokenData.caseId,

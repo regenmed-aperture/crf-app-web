@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { setCurrentView, setCurrentSectionId, setCurrentQuestionId, UIView, setError } from "@/store/slices/uiStateSlice";
+import { setCurrentSectionId, setCurrentQuestionId, setError } from "@/store/slices/uiStateSlice";
 import { motion, AnimatePresence, type Transition } from "framer-motion";
 import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import type React from "react";
@@ -70,7 +70,7 @@ export const ReportQuestionsView: React.FC = () => {
     if (currentSection && forwardSurveyMovementRef.current) {
       // Detect section transition (but not on first load)
       const prevSectComplete = previousSection?.questionIds.every(
-        questionId => uiState.currentResponses?.hasOwnProperty(questionId) && uiState.currentResponses[questionId].answer !== null
+        questionId => Object.hasOwn(uiState.currentResponses ?? {}, questionId) && uiState.currentResponses?.[questionId].answer !== null
       ) ?? false;
 
       if (
@@ -105,7 +105,7 @@ export const ReportQuestionsView: React.FC = () => {
       return;
     }
 
-    if (!uiState.currentResponses?.hasOwnProperty(currentQuestionId) || uiState.currentResponses[currentQuestionId].answer === null){
+    if (!Object.hasOwn(uiState.currentResponses ?? {}, currentQuestionId) || uiState.currentResponses?.[currentQuestionId].answer === null){
       dispatch(setError(true));
       return;
     }
@@ -141,7 +141,7 @@ export const ReportQuestionsView: React.FC = () => {
       return;
     }
 
-    if (!uiState.currentResponses?.hasOwnProperty(currentQuestionId) || uiState.currentResponses[currentQuestionId].answer === null){
+    if (!Object.hasOwn(uiState.currentResponses ?? {}, currentQuestionId) || uiState.currentResponses?.[currentQuestionId].answer === null){
       dispatch(setError(true));
       return;
     }
@@ -149,14 +149,16 @@ export const ReportQuestionsView: React.FC = () => {
       dispatch(setError(false));
     }
 
+    if (!reportState.user || !reportState.encodedReportId || !uiState.currentResponses) {
+      dispatch(setError(true));
+    }
+
     dispatch(submitPatientReport({
-      patient: reportState.user,
-      instanceId: reportState.instanceId,
-      instanceVersionId: reportState.instanceVersionId,
-      encodedReportId: reportState.encodedReportId,
-      questionResponses: uiState.currentResponses
+      patient: reportState.user!,
+      encodedReportId: reportState.encodedReportId!,
+      questionResponses: uiState.currentResponses!,
     }));
-  }, [dispatch, currentQuestionId, uiState.currentResponses]);
+  }, [currentQuestionId, uiState.currentResponses, reportState.user, reportState.encodedReportId, dispatch]);
 
 
   const transition: Transition = {

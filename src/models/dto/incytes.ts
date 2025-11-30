@@ -48,11 +48,6 @@ export interface IncytesPatientSurveyNavigationModel extends IncytesResponseMode
 }
 
 export interface IncytesAddBilateralAnswerModel {
-  patientId: number,
-  caseId: number,
-  surveyId: number,
-  surveyInstanceId: number,
-  reOpened: boolean,
   questionAnswerSides: IncytesPatientCaseSurveySide[]
 }
 

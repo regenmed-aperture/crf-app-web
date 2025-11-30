@@ -1,4 +1,4 @@
-import type { IncytesAnsweredQuestionsModel, IncytesUserModel } from "../incytes";
+import type { IncytesAnsweredQuestionsModel, IncytesQuestionAnswerModel, IncytesUserModel } from "../incytes";
 
 export interface IncytesResponseModel {
   isSuccessful: boolean;
@@ -45,4 +45,15 @@ export interface IncytesPatientSurveyNavigationModel extends IncytesResponseMode
   nextDueValue: number;
   nextExpiresUtc: string;
   nextDueDate: string;
+}
+
+export interface IncytesAddBilateralAnswerModel {
+  questionAnswerSides: IncytesPatientCaseSurveySide[]
+}
+
+export interface IncytesPatientCaseSurveySide {
+  patientCaseSurveyInstanceId: number,
+  patientCaseSurveyInstanceVersion: number,
+  bilateralAreaId: number,
+  questionAnswers: IncytesQuestionAnswerModel[]
 }

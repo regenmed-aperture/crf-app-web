@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { setCurrentView, setCurrentSectionId, setCurrentQuestionId, UIView, setError } from "@/store/slices/uiStateSlice";
+import { setCurrentSectionId, setCurrentQuestionId, setError } from "@/store/slices/uiStateSlice";
 import { motion, AnimatePresence, type Transition } from "framer-motion";
 import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import type React from "react";
@@ -17,6 +17,7 @@ import { Separator } from "@/components/ui/separator";
 import { QuestionsTopIsland } from "@/components/QuestionsTopIsland";
 import { getGlowShadowStyle, getRgbValue } from "@/util/colors";
 import { Badge } from "@/components/ui/badge";
+import { submitPatientReport } from "@/store/slices/reportStateSlice";
 
 export const ReportQuestionsView: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -69,7 +70,7 @@ export const ReportQuestionsView: React.FC = () => {
     if (currentSection && forwardSurveyMovementRef.current) {
       // Detect section transition (but not on first load)
       const prevSectComplete = previousSection?.questionIds.every(
-        questionId => uiState.currentResponses?.hasOwnProperty(questionId) && uiState.currentResponses[questionId].answer !== null
+        questionId => Object.hasOwn(uiState.currentResponses ?? {}, questionId) && uiState.currentResponses?.[questionId].answer !== null
       ) ?? false;
 
       if (
@@ -104,7 +105,7 @@ export const ReportQuestionsView: React.FC = () => {
       return;
     }
 
-    if (!uiState.currentResponses?.hasOwnProperty(currentQuestionId) || uiState.currentResponses[currentQuestionId].answer === null){
+    if (!Object.hasOwn(uiState.currentResponses ?? {}, currentQuestionId) || uiState.currentResponses?.[currentQuestionId].answer === null){
       dispatch(setError(true));
       return;
     }
@@ -140,7 +141,7 @@ export const ReportQuestionsView: React.FC = () => {
       return;
     }
 
-    if (!uiState.currentResponses?.hasOwnProperty(currentQuestionId) || uiState.currentResponses[currentQuestionId].answer === null){
+    if (!Object.hasOwn(uiState.currentResponses ?? {}, currentQuestionId) || uiState.currentResponses?.[currentQuestionId].answer === null){
       dispatch(setError(true));
       return;
     }
@@ -148,10 +149,16 @@ export const ReportQuestionsView: React.FC = () => {
       dispatch(setError(false));
     }
 
-    dispatch(setCurrentView(UIView.VIEW_RESULTS));
-    dispatch(setCurrentQuestionId(null));
-    dispatch(setCurrentSectionId(null));
-  }, [dispatch, currentQuestionId, uiState.currentResponses]);
+    if (!reportState.user || !reportState.encodedReportId || !uiState.currentResponses) {
+      dispatch(setError(true));
+    }
+
+    dispatch(submitPatientReport({
+      patient: reportState.user!,
+      encodedReportId: reportState.encodedReportId!,
+      questionResponses: uiState.currentResponses!,
+    }));
+  }, [currentQuestionId, uiState.currentResponses, reportState.user, reportState.encodedReportId, dispatch]);
 
 
   const transition: Transition = {

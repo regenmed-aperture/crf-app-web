@@ -5,18 +5,18 @@ import { Separator } from "@/components/ui/separator";
 import { useAppDispatch } from "@/store/hooks";
 import { setCurrentView, UIView } from "@/store/slices/uiStateSlice";
 import { FileText } from "lucide-react";
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 
 export const ReportConsentFormView: React.FC = () => {
   const dispatch = useAppDispatch();
 
-  const onConsentGranted = () => {
+  const onConsentGranted = useCallback(() => {
     dispatch(setCurrentView(UIView.VIEW_QUESTIONS));
-  };
+  }, [dispatch]);
 
-  const onConsentDeclined = () => {
+  const onConsentDeclined = useCallback(() => {
     dispatch(setCurrentView(UIView.VIEW_START));
-  };
+  }, [dispatch]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

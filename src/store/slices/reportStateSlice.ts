@@ -5,18 +5,23 @@ import { userService } from "@/services/userService";
 import { decodeReportToken } from "@/util/token";
 import { randomIntFromInterval } from "@/util/math";
 import { getSectionColor } from "@/util/colors";
-import type { IncytesUserModel } from "@/models/incytes";
-import type { IncytesPatientSurveyNavigationModel } from "@/models/dto/incytes";
+import { IncytesQuestionType, type IncytesQuestionAnswerModel, type IncytesUserModel } from "@/models/incytes";
+import type { IncytesPatientCaseSurveySide, IncytesPatientSurveyNavigationModel } from "@/models/dto/incytes";
+import type { QuestionResponse } from "./uiStateSlice";
 
 const SLICE_NAME = 'reportState';
 
 export interface ReportState {
+  isSubmittingData: boolean,
+  submitError: string | null,
   isFetchingData: boolean,
   fetchError: string | null,
 
   user: IncytesUserModel | null,
 
   encodedReportId: string | null,
+  instanceId: string | null,
+  instanceVersionId: string | null,
   sections: ReportSection[],
   questions: Record<string, ReportQuestion>,
   responses: Record<string, ReportQuestionResponse>,
@@ -27,12 +32,16 @@ export interface ReportState {
 }
 
 const initialState: ReportState = {
+  isSubmittingData: false,
+  submitError: null,
   isFetchingData: true,
   fetchError: null,
 
   user: null,
 
   encodedReportId: null,
+  instanceId: null,
+  instanceVersionId: null,
   sections: [],
   questions: {},
   responses: {},
@@ -62,7 +71,7 @@ export const fetchPatientReportData = createAsyncThunk(
 
     const sections: ReportSection[] = [];
     const questionsObj: Record<string, ReportQuestion> = {};
-    data.answeredQuestions[0].questions.forEach(q => {
+    data.answeredQuestions.forEach(bilateralArea => bilateralArea.questions.forEach(q => {
       if (!q.title) return;
 
       const questionId = q.id ?? randomIntFromInterval(10000, 99999);
@@ -82,14 +91,69 @@ export const fetchPatientReportData = createAsyncThunk(
       sections[existingIdx].questionIds.push(questionId);
 
       questionsObj[questionId] = q;
-    });
+    }));
 
     return {
+      instanceId: data.answeredQuestions[0].patientCaseSurveyInstanceId.toString(),
+      instanceVersionId: data.answeredQuestions[0].patientCaseSurveyInstanceVersion.toString(),
       encodedReportId,
       sections: sections,
       questions: questionsObj,
       navigation: navigationData,
     };
+  }
+);
+
+export const submitPatientReport = createAsyncThunk(
+  `${SLICE_NAME}/submitPatientReport`,
+  async ({ patient, encodedReportId, questionResponses }: { patient: IncytesUserModel, encodedReportId: string, questionResponses: Record<string, QuestionResponse> }) => {
+    const dtoQuestions: IncytesQuestionAnswerModel[] = [];
+    for (const response of Object.values(questionResponses)) {
+      switch (response.questionType) {  
+        // If multiple value question, create separate DTO entries for each answer
+        case IncytesQuestionType.MultipleValue: {
+          const multipleAnswers: number[] = response.answer as number[];
+          for (const answer of multipleAnswers){
+            const dtoQuestion: IncytesQuestionAnswerModel = {
+              questionId: response.questionId,
+              questionType: response.questionType,
+              answer: answer.toString()
+            }
+            dtoQuestions.push(dtoQuestion);
+          }
+          break;
+        }
+        default: {
+          const dtoQuestion: IncytesQuestionAnswerModel = {
+            questionId: response.questionId,
+            questionType: response.questionType,
+            answer: response.answer?.toString() ?? ""
+          }
+          dtoQuestions.push(dtoQuestion);
+          break;
+        }
+      }
+    }
+
+    const tokenData = decodeReportToken(encodedReportId); 
+    const singleSide: IncytesPatientCaseSurveySide = {
+      patientCaseSurveyInstanceId: 0,
+      patientCaseSurveyInstanceVersion: 0,            // Not really sure how to find instance version
+      bilateralAreaId: 0,                             // We ignore bilateral area here and mix all areas in one
+      questionAnswers: dtoQuestions
+    };
+    const payload = {
+      questionAnswerSides: [singleSide]
+    };
+
+    const response: boolean = await observationalProtocolService.submitSurvey(
+      tokenData.caseId,
+      tokenData.observationProtocolSurveyId,
+      patient.surveyInstanceId.toString(),
+      tokenData.surveyId,
+      payload
+    );
+    return response;
   }
 );
 
@@ -134,8 +198,17 @@ export const reportStateSlice = createSlice({
         state.navigation = action.payload.navigation;
         state.displayTitle = (action.payload.navigation.surveyTitle ?? "Patient 2-Week Post Operative").replace("Survey", "");
         state.responses = {};
+        state.instanceId = action.payload.instanceId;
+        state.instanceVersionId = action.payload.instanceVersionId;
 
         state.remainingSecondsToCompleteEstimate = Object.keys(state.questions).length * 20;
+      })
+      .addCase(submitPatientReport.pending, (state) => {
+        state.isSubmittingData = true;
+      })
+      .addCase(submitPatientReport.fulfilled, (state, action) => {
+        state.isSubmittingData = false;
+        state.submitError = action.payload.toString();
       })
   },
 });

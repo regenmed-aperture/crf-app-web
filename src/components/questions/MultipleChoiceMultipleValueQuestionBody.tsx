@@ -62,12 +62,13 @@ export const MultipleChoiceMultipleValueQuestionBody: React.FC<Props> = ({
             onClick={() => handleToggle(answer.id)}
             className={cn(
               "group relative flex items-center gap-3.5 px-4 py-3.5 rounded-lg",
-              "text-left transition-all duration-150 outline-none",
+              "text-left transition-all duration-200 outline-none",
               "border-2",
               "focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2",
+              "active:scale-[0.98] active:transition-transform",
               isSelected
-                ? "border-primary bg-primary/5 shadow-primary/10"
-                : "border-border bg-card hover:border-primary/40 hover:bg-accent/50 hover:shadow-md"
+                ? "border-primary bg-primary/5 shadow-md shadow-primary/10"
+                : "border-border bg-card hover:border-primary/40 hover:bg-accent/50 hover:shadow-md active:shadow-sm"
             )}
           >
             {/* Checkbox indicator */}

@@ -39,14 +39,14 @@ export const ReportResultsView: React.FC = () => {
               {/* Progress indicator */}
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-semibold">Your Progress</p>
-                  <span className="text-2xl font-bold text-green-600">78%</span>
+                  <p className="text-sm font-semibold">Survey Completion Progress</p>
+                  <span className="text-2xl font-bold text-green-600">60%</span>
                 </div>
                 <div className="w-full bg-muted rounded-full h-3">
-                  <div className="bg-green-600 h-3 rounded-full" style={{ width: '78%' }}></div>
+                  <div className="bg-green-600 h-3 rounded-full" style={{ width: '60%' }}></div>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  You're showing better improvement than 60% of other participants at this stage
+                  You're now among the 96 of participants that answered!
                 </p>
               </div>
 

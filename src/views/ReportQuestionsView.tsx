@@ -426,23 +426,35 @@ export const ReportQuestionsView: React.FC = () => {
           </AnimatePresence>
         </div>
         <div className="absolute w-full max-w-xl left-1/2 -translate-x-1/2 bottom-[100px] flex flex-row justify-between items-center gap-1 z-50">
-          <Button
-            variant={"outline"}
-            className="h-12 w-36 flex flex-row justify-between items-center"
-            onClick={onPrevClicked}
-            disabled={isFirstQuestion}
+          <motion.div
+            whileHover={!isFirstQuestion ? { scale: 1.05 } : {}}
+            whileTap={!isFirstQuestion ? { scale: 0.95 } : {}}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
           >
-            <Kbd>←</Kbd>
-            <span>Previous</span>
-          </Button>
+            <Button
+              variant={"outline"}
+              className="h-12 w-36 flex flex-row justify-between items-center transition-all duration-200 hover:shadow-md active:shadow-sm disabled:hover:shadow-none"
+              onClick={onPrevClicked}
+              disabled={isFirstQuestion}
+            >
+              <Kbd>←</Kbd>
+              <span>Previous</span>
+            </Button>
+          </motion.div>
 
-          <Button
-            className="h-12 w-36 flex flex-row justify-between items-center"
-            onClick={isLastQuestion ? onFinishClicked : onNextClicked}
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
           >
-            <span>{isLastQuestion ? "Finish" : "Next"}</span>
-            <Kbd className="bg-muted/40 text-primary">→</Kbd>
-          </Button>
+            <Button
+              className="h-12 w-36 flex flex-row justify-between items-center transition-all duration-200 hover:shadow-lg active:shadow-md"
+              onClick={isLastQuestion ? onFinishClicked : onNextClicked}
+            >
+              <span>{isLastQuestion ? "Finish" : "Next"}</span>
+              <Kbd className="bg-muted/40 text-primary">→</Kbd>
+            </Button>
+          </motion.div>
         </div>
       </div>
   );

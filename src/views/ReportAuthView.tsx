@@ -4,10 +4,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { initializePatientReportSession } from "@/store/slices/reportStateSlice";
+import { initializePatientReportSession, setIsFetchingData } from "@/store/slices/reportStateSlice";
 import { isAuthenticated } from "@/util/auth";
 import { Check } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+
+// TODO: absolutely horrendous but fine for demo
+const EMAIL = "gzh129372@gmail.com"
+const PWD = "oHw3uuXpkKAw8K"
 
 export const ReportAuthView: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -16,10 +20,17 @@ export const ReportAuthView: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  useEffect(() => {
+    if (!isFetchingData) {
+      setIsFetchingData(true);
+      dispatch(initializePatientReportSession({email: EMAIL, password: PWD}));
+    }
+  })
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    dispatch(initializePatientReportSession({email, password}))
+    //dispatch(initializePatientReportSession({ email, password }))
   };
 
   if (isFetchingData) {

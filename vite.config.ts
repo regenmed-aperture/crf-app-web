@@ -17,7 +17,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://demo-patient.incytesapp.co',
+        target: 'https://capstone-aperture-patient.incytesdata-dev.com',
         changeOrigin: true,
         secure: false,
       }

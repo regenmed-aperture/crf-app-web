@@ -12,7 +12,12 @@ export interface IncytesBilateralQuestionCollectionResponseModel extends Incytes
   answeredQuestions: IncytesAnsweredQuestionsModel[];
 }
 
-/** User registration response data */
+/** User-related endpoint response data */
+export interface IncytesPatientGenerateAutoSignInLinkResponseModel {
+  patient: string;
+  token: string;
+}
+
 export interface IncytesPatientAuthenticationResponseModel extends IncytesResponseModel {
   isUserConfirmed: boolean;
   user: IncytesUserModel;

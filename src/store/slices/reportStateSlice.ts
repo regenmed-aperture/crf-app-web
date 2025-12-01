@@ -1,13 +1,14 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { ReportQuestion, ReportQuestionResponse, ReportSection } from "../../models/report";
 import { observationalProtocolService } from "../../services/observationalProtocolService";
-import { userService } from "@/services/userService";
+import { authorizationService } from "@/services/authorizationService";
 import { decodeReportToken } from "@/util/token";
 import { randomIntFromInterval } from "@/util/math";
 import { getSectionColor } from "@/util/colors";
 import { IncytesQuestionType, type IncytesQuestionAnswerModel, type IncytesUserModel } from "@/models/incytes";
 import type { IncytesPatientCaseSurveySide, IncytesPatientSurveyNavigationModel } from "@/models/dto/incytes";
 import type { QuestionResponse } from "./uiStateSlice";
+import { surveyService } from "@/services/surveyService";
 
 const SLICE_NAME = 'reportState';
 
@@ -54,7 +55,7 @@ const initialState: ReportState = {
 export const initializePatientReportSession = createAsyncThunk(
   `${SLICE_NAME}/initializePatientReportSession`,
   async ({ email, password }: { email: string, password: string, }) => {
-    const data = await userService.signIn(email, password);
+    const data = await authorizationService.signInEmailPwd(email, password);
     return data;
   }
 );
@@ -146,7 +147,7 @@ export const submitPatientReport = createAsyncThunk(
       questionAnswerSides: [singleSide]
     };
 
-    const response: boolean = await observationalProtocolService.submitSurvey(
+    const response: boolean = await surveyService.submitSurvey(
       tokenData.caseId,
       tokenData.observationProtocolSurveyId,
       patient.surveyInstanceId.toString(),

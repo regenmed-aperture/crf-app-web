@@ -1,6 +1,6 @@
 export async function onRequest(context) {
   const url = new URL(context.request.url);
-  const targetUrl = `https://demo-patient.incytesapp.co${url.pathname}${url.search}`;
+  const targetUrl = `https://capstone-aperture-patient.incytesdata-dev.com${url.pathname}${url.search}`;
 
   const request = new Request(targetUrl, {
     method: context.request.method,

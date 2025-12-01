@@ -1,4 +1,6 @@
 export interface ReportTokenData {
+  autoSignInEncodedPatientData: string;
+  autoSignInToken: string;
   observationProtocolSurveyId: string;
   caseId: string;
   surveyId: string;
@@ -20,6 +22,6 @@ export const decodeReportToken = (token: string): ReportTokenData => {
     
     return JSON.parse(atob(base64));
   } catch (error) {
-    throw new Error('Invalid report token format');
+    throw new Error('Invalid report token format: ' + error);
   }
 };

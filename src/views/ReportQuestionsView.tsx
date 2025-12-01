@@ -211,7 +211,7 @@ export const ReportQuestionsView: React.FC = () => {
   }
 
   return (
-      <div className="w-full h-full flex flex-col items-center relative overflow-hidden">
+      <div className="w-full h-full flex flex-col items-center relative">
         {/* Celebration Animation Overlay - Minimal & Sleek */}
         <AnimatePresence>
           {showCelebration && celebrationColor && (
@@ -376,48 +376,50 @@ export const ReportQuestionsView: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
-
-            <div className={`absolute top-full left-0 right-0 ${isMobile ? 'mt-3' : 'mt-6'} ${isMobile ? 'min-h-[48px]' : 'min-h-[64px]'}`}>
-              <AnimatePresence>
-                {uiState.error && (
-                  <motion.div
-                    initial={{
-                      opacity: 0,
-                      y: -20,
-                      rotate: 0
-                    }}
-                    animate={{
-                      opacity: 1,
-                      y: 0,
-                      rotate: [0, -3, 3, -3, 3, -2, 2, -1, 1, 0], // Dangling oscillation
-                    }}
-                    exit={{
-                      opacity: 0,
-                      y: -20,
-                      rotate: 0
-                    }}
-                    transition={{
-                      opacity: { duration: 0.2 },
-                      y: { duration: 0.3 },
-                      rotate: {
-                        duration: 1.2,
-                        ease: "easeOut",
-                        times: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1] // Control timing of each rotation
-                      }
-                    }}
-                    style={{
-                      transformOrigin: 'top center'
-                    }}
-                  >
-                    <Alert variant="destructive" className={`bg-[#fee] text-red-600 border-1 border-solid border-[#fcc] ${isMobile ? 'py-2' : ''}`}>
-                      <AlertTriangleIcon className={isMobile ? 'size-4' : ''}></AlertTriangleIcon>
-                      <AlertTitle className={isMobile ? 'text-xs' : ''}>Please select an anwser before proceeding to the next question</AlertTitle>
-                    </Alert>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
           </motion.div>
+
+          {/* Error message - positioned absolutely in the main content area */}
+          <div className={`absolute left-1/2 -translate-x-1/2 bottom-0 ${isMobile ? 'w-full px-4' : 'w-full max-w-xl'} ${isMobile ? 'mb-20' : 'mb-28'} pointer-events-none z-30`}>
+            <AnimatePresence>
+              {uiState.error && (
+                <motion.div
+                  initial={{
+                    opacity: 0,
+                    y: -20,
+                    rotate: 0
+                  }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                    rotate: [0, -3, 3, -3, 3, -2, 2, -1, 1, 0], // Dangling oscillation
+                  }}
+                  exit={{
+                    opacity: 0,
+                    y: -20,
+                    rotate: 0
+                  }}
+                  transition={{
+                    opacity: { duration: 0.2 },
+                    y: { duration: 0.3 },
+                    rotate: {
+                      duration: 1.2,
+                      ease: "easeOut",
+                      times: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1] // Control timing of each rotation
+                    }
+                  }}
+                  style={{
+                    transformOrigin: 'top center'
+                  }}
+                  className="pointer-events-auto"
+                >
+                  <Alert variant="destructive" className={`bg-[#fee] text-red-600 border-1 border-solid border-[#fcc] ${isMobile ? 'py-2' : ''}`}>
+                    <AlertTriangleIcon className={isMobile ? 'size-4' : ''}></AlertTriangleIcon>
+                    <AlertTitle className={isMobile ? 'text-xs' : ''}>Please select an anwser before proceeding to the next question</AlertTitle>
+                  </Alert>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* Next card - hidden on mobile */}
           {!isMobile && (
@@ -439,7 +441,7 @@ export const ReportQuestionsView: React.FC = () => {
           )}
         </div>
         {/* Navigation Buttons - Fixed Height at Bottom */}
-        <div className={`w-full ${isMobile ? 'max-w-full px-4' : 'max-w-xl'} flex flex-row justify-between items-center gap-1 ${isMobile ? 'py-4' : 'py-6'} flex-shrink-0`}>
+        <div className={`w-full ${isMobile ? 'max-w-full px-4' : 'max-w-xl'} flex flex-row justify-between items-center gap-1 ${isMobile ? 'py-4' : 'py-6'} flex-shrink-0 z-50 relative`}>
           <motion.div
             whileHover={!isFirstQuestion ? { scale: 1.05 } : {}}
             whileTap={!isFirstQuestion ? { scale: 0.95 } : {}}

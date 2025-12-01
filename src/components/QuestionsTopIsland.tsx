@@ -25,7 +25,6 @@ export const QuestionsTopIsland: React.FC<Props> = ({
 
   return (
     <div className="w-full max-w-[800px] bg-white flex flex-col rounded-lg shadow-sm border">
-      {/* Desktop: Horizontal progress bar */}
       {!isMobile && (
         <QuestionsSectionedProgressBar
           sections={reportState.sections}
@@ -34,8 +33,6 @@ export const QuestionsTopIsland: React.FC<Props> = ({
           className="w-full rounded-t-lg"
         />
       )}
-      
-      {/* Mobile: Circular progress with dots */}
       {isMobile && (
         <div className="pt-3 pb-1">
           <QuestionsMobileProgress
@@ -46,13 +43,14 @@ export const QuestionsTopIsland: React.FC<Props> = ({
         </div>
       )}
       
-      <div className="flex items-center justify-center gap-4 px-3 py-2">
+      <div className="flex flex-row items-center justify-between gap-3 px-3 py-2">
         <QuestionsViewAllDialogue>
           <Button
-            variant="secondary"
+            variant={isMobile ? "ghost" : "secondary"}
+            size={isMobile ? "sm" : "default"}
             className="hover:cursor-pointer"
           >
-            <LayoutGrid />
+            <LayoutGrid className={isMobile ? "size-3.5" : ""} />
             View All
           </Button>
         </QuestionsViewAllDialogue>
@@ -61,7 +59,10 @@ export const QuestionsTopIsland: React.FC<Props> = ({
             {currentSection?.name}
           </h3>
         )}
-        <Badge variant="secondary" className="flex flex-row items-center gap-1 rounded-full text-sm">
+        <Badge 
+          variant="secondary" 
+          className="flex flex-row items-center gap-1 rounded-full text-sm"
+        >
           <ListOrdered className="size-3.5!" />
           <div className="flex flex-row items-center gap-0.5">
             <span className="w-5 text-center">

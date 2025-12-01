@@ -18,11 +18,13 @@ import { QuestionsTopIsland } from "@/components/QuestionsTopIsland";
 import { getGlowShadowStyle, getRgbValue } from "@/util/colors";
 import { Badge } from "@/components/ui/badge";
 import { submitPatientReport } from "@/store/slices/reportStateSlice";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const ReportQuestionsView: React.FC = () => {
   const dispatch = useAppDispatch();
   const reportState = useAppSelector(state => state.reportState);
   const uiState = useAppSelector(state => state.uiState);
+  const isMobile = useIsMobile();
 
   // Track which sections already have the celebration effect made so that they are not repeated.
   const completedSectionsRef = useRef<Set<number>>(new Set());
@@ -222,30 +224,30 @@ export const ReportQuestionsView: React.FC = () => {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
               >
-                {/* Multiple expanding rings for depth */}
+                {/* Multiple expanding rings for depth - smaller on mobile */}
                 {[0, 0.15, 0.3].map((delay) => (
                   <motion.div
                     key={delay}
-                    className="absolute w-32 h-32 border-4 rounded-full"
+                    className={`absolute ${isMobile ? 'w-16 h-16' : 'w-32 h-32'} border-4 rounded-full`}
                     style={{ borderColor: `rgba(${getRgbValue(celebrationColor)}, 0.25)` }}
                     initial={{ scale: 0, opacity: 0.8 }}
-                    animate={{ scale: 8, opacity: 0 }}
+                    animate={{ scale: isMobile ? 6 : 8, opacity: 0 }}
                     transition={{ duration: 1, delay, ease: "easeOut" }}
                   />
                 ))}
               </motion.div>
 
-              {/* Minimal emoji particles - fewer, more subtle */}
-              {['✨', '⭐', '✨', '⭐'].map((emoji, i) => (
+              {/* Minimal emoji particles - fewer on mobile */}
+              {(isMobile ? ['✨', '⭐'] : ['✨', '⭐', '✨', '⭐']).map((emoji, i, arr) => (
                 <motion.div
                   key={i}
-                  className="absolute text-2xl z-40 pointer-events-none"
+                  className={`absolute ${isMobile ? 'text-xl' : 'text-2xl'} z-40 pointer-events-none`}
                   style={{ left: '50%', top: '50%' }}
                   initial={{ scale: 0, x: 0, y: 0, opacity: 0 }}
                   animate={{
                     scale: [0, 1, 0.8],
-                    x: Math.cos((i / 4) * Math.PI * 2) * 150,
-                    y: Math.sin((i / 4) * Math.PI * 2) * 150 - 50,
+                    x: Math.cos((i / arr.length) * Math.PI * 2) * (isMobile ? 80 : 150),
+                    y: Math.sin((i / arr.length) * Math.PI * 2) * (isMobile ? 80 : 150) - (isMobile ? 30 : 50),
                     opacity: [0, 1, 0],
                   }}
                   transition={{ duration: 1, delay: i * 0.08, ease: "easeOut" }}
@@ -256,24 +258,24 @@ export const ReportQuestionsView: React.FC = () => {
 
               {/* Sleek minimal toast notification */}
               <motion.div
-                className="absolute top-24 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
+                className={`absolute ${isMobile ? 'top-16' : 'top-24'} left-1/2 -translate-x-1/2 z-50 pointer-events-none`}
                 initial={{ opacity: 0, y: -20, scale: 0.9 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -20, scale: 0.9 }}
                 transition={{ type: "spring", damping: 20, stiffness: 300 }}
               >
                 <div
-                  className="bg-white/95 backdrop-blur-md rounded-full px-6 py-3 shadow-lg border flex items-center gap-3"
+                  className={`bg-white/95 backdrop-blur-md rounded-full ${isMobile ? 'px-4 py-2' : 'px-6 py-3'} shadow-lg border flex items-center gap-2 md:gap-3`}
                   style={{ borderColor: `rgb(${getRgbValue(celebrationColor)})` }}
                 >
                   <motion.span
-                    className="text-xl"
+                    className={isMobile ? 'text-base' : 'text-xl'}
                     animate={{ rotate: [0, 15, -15, 0] }}
                     transition={{ duration: 0.4, repeat: 1 }}
                   >
                     🎉
                   </motion.span>
-                  <span className="font-medium text-sm text-gray-700">
+                  <span className={`font-medium ${isMobile ? 'text-xs' : 'text-sm'} text-gray-700`}>
                     Section Complete
                   </span>
                   <div
@@ -287,7 +289,7 @@ export const ReportQuestionsView: React.FC = () => {
         </AnimatePresence>
         
         {/* Top Island - Fixed Height */}
-        <div className="w-full px-4 md:px-8 pt-4 pb-2 flex justify-center flex-shrink-0">
+        <div className={`w-full ${isMobile ? 'px-4' : 'px-4 md:px-8'} ${isMobile ? 'pt-2 pb-1' : 'pt-4 pb-2'} flex justify-center flex-shrink-0`}>
           <QuestionsTopIsland
             currentQuetionIndex={currentIndex}
             totalQuestionsNum={allQuestionIds.length}
@@ -296,31 +298,33 @@ export const ReportQuestionsView: React.FC = () => {
         </div>
         
         {/* Main Content Area - Flexible with scroll */}
-        <div className="w-full max-w-[1500px] flex-1 flex items-center justify-center relative min-h-0 px-4">
-          {/* Previous card */}
-          <AnimatePresence mode="popLayout">
-            {prevQuestion && (
-              <motion.div
-                key={`prev-${prevQuestionId}`}
-                layoutId={`card-${prevQuestionId}`}
-                className="z-0 absolute left-0 top-1/2 -translate-y-1/2 w-80 h-64 rounded-lg rounded-l-none overflow-hidden border-2 border-l-0 bg-white flex flex-col justify-center items-center p-2 text-center text-sm text-muted-foreground"
-                initial={{ opacity: 0, x: -100 }}
-                animate={{ opacity: 0.6, x: 0 }}
-                exit={{ opacity: 0, x: -100 }}
-                transition={transition}
-              >
-                {prevQuestion.title}
-              </motion.div>
-            )}
-          </AnimatePresence>
+        <div className={`w-full ${isMobile ? 'max-w-full' : 'max-w-[1500px]'} flex-1 flex items-center justify-center relative min-h-0 ${isMobile ? 'px-4' : 'px-4'}`}>
+          {/* Previous card - hidden on mobile */}
+          {!isMobile && (
+            <AnimatePresence mode="popLayout">
+              {prevQuestion && (
+                <motion.div
+                  key={`prev-${prevQuestionId}`}
+                  layoutId={`card-${prevQuestionId}`}
+                  className="z-0 absolute left-0 top-1/2 -translate-y-1/2 w-80 h-64 rounded-lg rounded-l-none overflow-hidden border-2 border-l-0 bg-white flex flex-col justify-center items-center p-2 text-center text-sm text-muted-foreground"
+                  initial={{ opacity: 0, x: -100 }}
+                  animate={{ opacity: 0.6, x: 0 }}
+                  exit={{ opacity: 0, x: -100 }}
+                  transition={transition}
+                >
+                  {prevQuestion.title}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          )}
 
           {/* Current card */}
           <motion.div
             key={`current-${currentQuestionId}`}
             layoutId={`card-${currentQuestionId}`}
-            className="z-10 w-full max-w-xl flex flex-col"
+            className={`z-10 w-full ${isMobile ? 'max-w-full' : 'max-w-xl'} flex flex-col`}
             style={{ 
-              minHeight: '300px',
+              minHeight: isMobile ? '250px' : '300px',
               maxHeight: '100%'
             }}
             initial={{ opacity: 0 }}
@@ -328,25 +332,25 @@ export const ReportQuestionsView: React.FC = () => {
             transition={transition}
           >
             <Card
-              className="py-4 flex flex-col gap-4 rounded-lg border-2 overflow-hidden relative flex-1"
+              className={`${isMobile ? 'py-3' : 'py-4'} flex flex-col ${isMobile ? 'gap-3' : 'gap-4'} rounded-lg border-2 overflow-hidden relative flex-1`}
               style={{
                 boxShadow: currentSection ? getGlowShadowStyle(currentSection.color) : undefined,
               }}
             >
-              <CardHeader className="px-4 flex flex-row gap-2 items-start flex-shrink-0">
-                <Badge variant="secondary" className="justify-self-end flex flex-row items-center gap-1 rounded-full text-md min-w-[30px]">
+              <CardHeader className={`${isMobile ? 'px-3' : 'px-4'} flex flex-row gap-2 items-start flex-shrink-0`}>
+                <Badge variant="secondary" className={`justify-self-end flex flex-row items-center gap-1 rounded-full ${isMobile ? 'text-sm min-w-[26px]' : 'text-md min-w-[30px]'}`}>
                   {currentIndex + 1}
                 </Badge>
-                <h2 className="text-xl">
+                <h2 className={isMobile ? 'text-base' : 'text-xl'}>
                   {currentQuestion.title}
                 </h2>
               </CardHeader>
               <Separator className="flex-shrink-0" />
-              <CardContent className="px-4 flex flex-col gap-3 flex-1 overflow-y-auto min-h-0">
+              <CardContent className={`${isMobile ? 'px-3' : 'px-4'} flex flex-col ${isMobile ? 'gap-2' : 'gap-3'} flex-1 overflow-y-auto min-h-0`}>
                 {currentQuestion.instructions && (
-                  <Alert>
-                    <Info />
-                    <AlertDescription>
+                  <Alert className={isMobile ? 'text-xs py-2' : ''}>
+                    <Info className={isMobile ? 'size-3.5' : ''} />
+                    <AlertDescription className={isMobile ? 'text-xs' : ''}>
                       {currentQuestion.instructions}
                     </AlertDescription>
                   </Alert>
@@ -373,7 +377,7 @@ export const ReportQuestionsView: React.FC = () => {
               </CardContent>
             </Card>
 
-            <div className="absolute top-full left-0 right-0 mt-6 min-h-[64px]">
+            <div className={`absolute top-full left-0 right-0 ${isMobile ? 'mt-3' : 'mt-6'} ${isMobile ? 'min-h-[48px]' : 'min-h-[64px]'}`}>
               <AnimatePresence>
                 {uiState.error && (
                   <motion.div
@@ -405,9 +409,9 @@ export const ReportQuestionsView: React.FC = () => {
                       transformOrigin: 'top center'
                     }}
                   >
-                    <Alert variant="destructive" className="bg-[#fee] text-red-600 border-1 border-solid border-[#fcc]">
-                      <AlertTriangleIcon></AlertTriangleIcon>
-                      <AlertTitle>Please select an anwser before proceeding to the next question</AlertTitle>
+                    <Alert variant="destructive" className={`bg-[#fee] text-red-600 border-1 border-solid border-[#fcc] ${isMobile ? 'py-2' : ''}`}>
+                      <AlertTriangleIcon className={isMobile ? 'size-4' : ''}></AlertTriangleIcon>
+                      <AlertTitle className={isMobile ? 'text-xs' : ''}>Please select an anwser before proceeding to the next question</AlertTitle>
                     </Alert>
                   </motion.div>
                 )}
@@ -415,25 +419,27 @@ export const ReportQuestionsView: React.FC = () => {
             </div>
           </motion.div>
 
-          {/* Next card */}
-          <AnimatePresence mode="popLayout">
-            {nextQuestion && (
-              <motion.div
-                key={`next-${nextQuestionId}`}
-                layoutId={`card-${nextQuestionId}`}
-                className="z-0 absolute right-0 top-1/2 -translate-y-1/2 w-80 h-64 rounded-lg rounded-r-none overflow-hidden border-2 border-r-0 bg-white flex flex-col justify-center items-center p-2 text-center text-sm text-muted-foreground"
-                initial={{ opacity: 0, x: 100 }}
-                animate={{ opacity: 0.6, x: 0 }}
-                exit={{ opacity: 0, x: 100 }}
-                transition={transition}
-              >
-                {nextQuestion.title}
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* Next card - hidden on mobile */}
+          {!isMobile && (
+            <AnimatePresence mode="popLayout">
+              {nextQuestion && (
+                <motion.div
+                  key={`next-${nextQuestionId}`}
+                  layoutId={`card-${nextQuestionId}`}
+                  className="z-0 absolute right-0 top-1/2 -translate-y-1/2 w-80 h-64 rounded-lg rounded-r-none overflow-hidden border-2 border-r-0 bg-white flex flex-col justify-center items-center p-2 text-center text-sm text-muted-foreground"
+                  initial={{ opacity: 0, x: 100 }}
+                  animate={{ opacity: 0.6, x: 0 }}
+                  exit={{ opacity: 0, x: 100 }}
+                  transition={transition}
+                >
+                  {nextQuestion.title}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          )}
         </div>
         {/* Navigation Buttons - Fixed Height at Bottom */}
-        <div className="w-full max-w-xl flex flex-row justify-between items-center gap-1 py-6 flex-shrink-0">
+        <div className={`w-full ${isMobile ? 'max-w-full px-4' : 'max-w-xl'} flex flex-row justify-between items-center gap-1 ${isMobile ? 'py-4' : 'py-6'} flex-shrink-0`}>
           <motion.div
             whileHover={!isFirstQuestion ? { scale: 1.05 } : {}}
             whileTap={!isFirstQuestion ? { scale: 0.95 } : {}}
@@ -441,12 +447,12 @@ export const ReportQuestionsView: React.FC = () => {
           >
             <Button
               variant={"outline"}
-              className="h-12 w-36 flex flex-row justify-between items-center transition-all duration-200 hover:shadow-md active:shadow-sm disabled:hover:shadow-none"
+              className={`${isMobile ? 'h-10 w-28' : 'h-12 w-36'} flex flex-row justify-between items-center transition-all duration-200 hover:shadow-md active:shadow-sm disabled:hover:shadow-none`}
               onClick={onPrevClicked}
               disabled={isFirstQuestion}
             >
-              <Kbd>←</Kbd>
-              <span>Previous</span>
+              {!isMobile && <Kbd>←</Kbd>}
+              <span className={isMobile ? 'text-sm' : ''}>Previous</span>
             </Button>
           </motion.div>
 
@@ -456,11 +462,11 @@ export const ReportQuestionsView: React.FC = () => {
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
           >
             <Button
-              className="h-12 w-36 flex flex-row justify-between items-center transition-all duration-200 hover:shadow-lg active:shadow-md"
+              className={`${isMobile ? 'h-10 w-28' : 'h-12 w-36'} flex flex-row justify-between items-center transition-all duration-200 hover:shadow-lg active:shadow-md`}
               onClick={isLastQuestion ? onFinishClicked : onNextClicked}
             >
-              <span>{isLastQuestion ? "Finish" : "Next"}</span>
-              <Kbd className="bg-muted/40 text-primary">→</Kbd>
+              <span className={isMobile ? 'text-sm' : ''}>{isLastQuestion ? "Finish" : "Next"}</span>
+              {!isMobile && <Kbd className="bg-muted/40 text-primary">→</Kbd>}
             </Button>
           </motion.div>
         </div>

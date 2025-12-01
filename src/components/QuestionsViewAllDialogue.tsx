@@ -23,8 +23,6 @@ export const QuestionsViewAllDialogue: React.FC<Props> = ({ children }) => {
   const [open, setOpen] = useState(false);
 
   const currentIndex = allQuestionIds.findIndex(questionId => questionId === uiState.currentQuestionId);
-
-  // Find the index of the first unanswered question
   const firstUnansweredIndex = useMemo(() => {
     return allQuestionIds.findIndex(questionId => {
       const isAnswered = uiState.currentResponses?.hasOwnProperty(questionId) && uiState.currentResponses[questionId].answer !== null;
@@ -58,25 +56,20 @@ export const QuestionsViewAllDialogue: React.FC<Props> = ({ children }) => {
                   )}>
                     {section.name}
                   </div>
-                  
-                  {/* Questions in this section */}
                   {section.questionIds.map((questionId) => {
                     const question = reportState.questions[questionId];
                     const index = allQuestionIds.indexOf(questionId);
                     const isAnswered = uiState.currentResponses?.hasOwnProperty(questionId) && uiState.currentResponses[questionId].answer !== null;
                     const isCurrent = index === currentIndex;
 
-                    // Allow navigation only if:
-                    // 1. It's the current question, OR
-                    // 2. The question is answered AND it's before the first unanswered question (or all questions are answered)
-                    const canNavigate = isCurrent || (isAnswered && (firstUnansweredIndex === -1 || index < firstUnansweredIndex));
+                   const canNavigate = isCurrent || (isAnswered && (firstUnansweredIndex === -1 || index < firstUnansweredIndex));
 
                     return (
                       <Button
                         key={question.id}
                         variant="outline"
                         className={cn([
-                          "w-full h-16 gap-0",
+                          "w-full min-h-16 h-auto gap-0 py-3",
                           !canNavigate ? "opacity-20" : "hover:cursor-pointer"
                         ])}
                         onClick={() => {
@@ -91,12 +84,12 @@ export const QuestionsViewAllDialogue: React.FC<Props> = ({ children }) => {
                         }}
                       >
                         <div className={cn(
-                          "size-6 mr-2 rounded-xl text-xs text-center flex items-center justify-center flex-shrink-0 text-white font-medium",
+                          "size-6 mr-2 rounded-xl text-xs text-center flex items-center justify-center flex-shrink-0 text-white font-medium self-start mt-0.5",
                           getBgColorTWClass(section.color)
                         )}>
                           {index + 1}
                         </div>
-                        <p className="whitespace-normal text-left flex-1 overflow-hidden">
+                        <p className="whitespace-normal text-left flex-1 text-sm leading-relaxed">
                           {question.title}
                         </p>
                       </Button>

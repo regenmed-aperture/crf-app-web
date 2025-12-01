@@ -6,7 +6,7 @@ import { decodeReportToken } from "@/util/token";
 import { randomIntFromInterval } from "@/util/math";
 import { getSectionColor } from "@/util/colors";
 import { IncytesQuestionType, type IncytesQuestionAnswerModel, type IncytesUserModel } from "@/models/incytes";
-import type { IncytesPatientCaseSurveySide, IncytesPatientSurveyNavigationModel } from "@/models/dto/incytes";
+import type { IncytesPatientCaseSurveySide, IncytesPatientSurveyNavigationModel, SurveyTimelineItem } from "@/models/dto/incytes";
 import type { QuestionResponse } from "./uiStateSlice";
 import { surveyService } from "@/services/surveyService";
 
@@ -30,6 +30,10 @@ export interface ReportState {
   displayTitle: string,
 
   remainingSecondsToCompleteEstimate: number,
+
+  timeline: SurveyTimelineItem[],
+  isTimelineLoading: boolean,
+  timelineError: string | null,
 }
 
 const initialState: ReportState = {
@@ -50,6 +54,10 @@ const initialState: ReportState = {
   displayTitle: "",
 
   remainingSecondsToCompleteEstimate: 0,
+
+  timeline: [],
+  isTimelineLoading: false,
+  timelineError: null,
 };
 
 export const initializePatientReportSession = createAsyncThunk(
@@ -102,6 +110,14 @@ export const fetchPatientReportData = createAsyncThunk(
       questions: questionsObj,
       navigation: navigationData,
     };
+  }
+);
+
+export const fetchSurveyTimeline = createAsyncThunk(
+  `${SLICE_NAME}/fetchSurveyTimeline`,
+  async (caseId: string) => {
+    const data = await surveyService.getTimeline(caseId);
+    return data;
   }
 );
 
@@ -197,7 +213,7 @@ export const reportStateSlice = createSlice({
         state.sections = action.payload.sections;
         state.questions = action.payload.questions;
         state.navigation = action.payload.navigation;
-        state.displayTitle = (action.payload.navigation.surveyTitle ?? "Patient 2-Week Post Operative").replace("Survey", "");
+        state.displayTitle = (action.payload.navigation.surveyTitle ?? "Patient 3 Months Post-Operative Follow-Up").replace("Survey", "");
         state.responses = {};
         state.instanceId = action.payload.instanceId;
         state.instanceVersionId = action.payload.instanceVersionId;
@@ -210,6 +226,22 @@ export const reportStateSlice = createSlice({
       .addCase(submitPatientReport.fulfilled, (state, action) => {
         state.isSubmittingData = false;
         state.submitError = action.payload.toString();
+      })
+      .addCase(fetchSurveyTimeline.pending, (state) => {
+        state.isTimelineLoading = true;
+        state.timelineError = null;
+      })
+      .addCase(fetchSurveyTimeline.fulfilled, (state, action) => {
+        state.isTimelineLoading = false;
+        if (action.payload.isSuccessful) {
+          state.timeline = action.payload.surveys;
+        } else {
+          state.timelineError = action.payload.errorMessage;
+        }
+      })
+      .addCase(fetchSurveyTimeline.rejected, (state, action) => {
+        state.isTimelineLoading = false;
+        state.timelineError = action.error.message ?? "Failed to fetch timeline";
       })
   },
 });

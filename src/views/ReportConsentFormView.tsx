@@ -98,7 +98,7 @@ export const ReportConsentFormView: React.FC = () => {
           <Separator />
 
           <CardFooter className="px-4 sm:px-6">
-            <div className="w-full flex flex-col sm:flex-row justify-between gap-3 sm:gap-4">
+            <div className="w-full flex flex-col-reverse sm:flex-row justify-between gap-3 sm:gap-4">
               <Button
                 variant="outline"
                 className="flex-1 flex flex-row justify-center items-center gap-2 min-h-[44px]"

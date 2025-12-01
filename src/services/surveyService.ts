@@ -1,6 +1,21 @@
-import type { IncytesAddBilateralAnswerModel } from "@/models/dto/incytes";
+import type { IncytesAddBilateralAnswerModel, SurveyTimelineResponse } from "@/models/dto/incytes";
 
 export const surveyService = {
+  /**
+   * Fetch survey timeline for a case
+   *
+   * @param caseId - case ID
+   * @returns timeline response containing survey items
+   */
+  async getTimeline(caseId: string): Promise<SurveyTimelineResponse> {
+    const response = await fetch(`/api/survey/timeline/${caseId}`, {
+      method: 'GET',
+      headers: { 'content-type': 'application/json' },
+    });
+    const data = await response.json();
+    return data as SurveyTimelineResponse;
+  },
+
   /**
    * Submit survey answers
    *

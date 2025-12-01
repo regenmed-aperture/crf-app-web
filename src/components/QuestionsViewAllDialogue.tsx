@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import type React from "react";
 import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
@@ -25,7 +25,7 @@ export const QuestionsViewAllDialogue: React.FC<Props> = ({ children }) => {
   const currentIndex = allQuestionIds.findIndex(questionId => questionId === uiState.currentQuestionId);
   const firstUnansweredIndex = useMemo(() => {
     return allQuestionIds.findIndex(questionId => {
-      const isAnswered = uiState.currentResponses?.hasOwnProperty(questionId) && uiState.currentResponses[questionId].answer !== null;
+      const isAnswered = Object.hasOwn(uiState.currentResponses ?? {}, questionId) && uiState.currentResponses?.[questionId].answer !== null;
       return !isAnswered;
     });
   }, [allQuestionIds, uiState.currentResponses]);
@@ -35,6 +35,7 @@ export const QuestionsViewAllDialogue: React.FC<Props> = ({ children }) => {
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
+      <DialogTitle className="hidden">View All Questions</DialogTitle>
       <DialogContent className="pt-10">
         <Card
           className="relative border-t-0 border-l-0 border-r-0 border-b-2 border-b-gray-200 bg-gradient-to-r from-orange-50 to-red-50 shadow-none rounded-none"
@@ -59,7 +60,7 @@ export const QuestionsViewAllDialogue: React.FC<Props> = ({ children }) => {
                   {section.questionIds.map((questionId) => {
                     const question = reportState.questions[questionId];
                     const index = allQuestionIds.indexOf(questionId);
-                    const isAnswered = uiState.currentResponses?.hasOwnProperty(questionId) && uiState.currentResponses[questionId].answer !== null;
+                    const isAnswered = Object.hasOwn(uiState.currentResponses ?? {}, questionId) && uiState.currentResponses?.[questionId].answer !== null;
                     const isCurrent = index === currentIndex;
 
                    const canNavigate = isCurrent || (isAnswered && (firstUnansweredIndex === -1 || index < firstUnansweredIndex));

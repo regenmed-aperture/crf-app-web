@@ -24,57 +24,79 @@ export const QuestionsTopIsland: React.FC<Props> = ({
   const isMobile = useIsMobile();
 
   return (
-    <div className="w-full max-w-[800px] bg-white flex flex-col rounded-lg shadow-sm border">
+    <div className={`w-full max-w-[800px] flex flex-col ${!isMobile ? "bg-white rounded-lg shadow-sm border border-t-0" : ""}`}>
       {!isMobile && (
         <QuestionsSectionedProgressBar
           sections={reportState.sections}
           currentQuestionIndex={currentQuetionIndex}
           totalQuestions={totalQuestionsNum}
-          className="w-full rounded-t-lg"
+          className="w-[calc(100%+1.25rem)] -mt-1 -mx-2.5"
         />
       )}
-      {isMobile && (
-        <div className="pt-3 pb-1">
-          <QuestionsMobileProgress
-            sections={reportState.sections}
-            currentQuestionIndex={currentQuetionIndex}
-            totalQuestions={totalQuestionsNum}
-          />
-        </div>
-      )}
-      
-      <div className="flex flex-row items-center justify-between gap-3 px-3 py-2">
-        <QuestionsViewAllDialogue>
-          <Button
-            variant={isMobile ? "ghost" : "secondary"}
-            size={isMobile ? "sm" : "default"}
-            className="hover:cursor-pointer"
-          >
-            <LayoutGrid className={isMobile ? "size-3.5" : ""} />
-            View All
-          </Button>
-        </QuestionsViewAllDialogue>
-        {!isMobile && (
-          <h3 className="text-lg tracking-wide text-center">
+      {isMobile ? (
+        <div className="flex flex-col gap-2 py-1">
+          <div className="relative flex flex-row justify-between items-center">
+            <QuestionsViewAllDialogue>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="hover:cursor-pointer"
+              >
+                <LayoutGrid className="size-3.5" />
+                View All
+              </Button>
+            </QuestionsViewAllDialogue>
+            <div className="absolute left-1/2 -translate-x-1/2">
+              <QuestionsMobileProgress
+                sections={reportState.sections}
+                currentQuestionIndex={currentQuetionIndex}
+                totalQuestions={totalQuestionsNum}
+                showBigCircle={false}
+              />
+            </div>
+            <QuestionsMobileProgress
+              sections={reportState.sections}
+              currentQuestionIndex={currentQuetionIndex}
+              totalQuestions={totalQuestionsNum}
+              showSmallDots={false}
+            />
+          </div>
+          <h3 className="tracking-wide text-center text-md">
             {currentSection?.name}
           </h3>
-        )}
-        <Badge 
-          variant="secondary" 
-          className="flex flex-row items-center gap-1 rounded-full text-sm"
-        >
-          <ListOrdered className="size-3.5!" />
-          <div className="flex flex-row items-center gap-0.5">
-            <span className="w-5 text-center">
-              {currentQuetionIndex + 1}
-            </span>
-            <span>/</span>
-            <span className="w-5 text-center">
-              {totalQuestionsNum}
-            </span>
-          </div>
-        </Badge>
-      </div>
+        </div>
+      ) : (
+        <div className="flex flex-row justify-between items-center gap-3 px-3 py-2">
+          <QuestionsViewAllDialogue>
+            <Button
+              variant="secondary"
+              size="default"
+              className="hover:cursor-pointer"
+            >
+              <LayoutGrid />
+              View All
+            </Button>
+          </QuestionsViewAllDialogue>
+          <h3 className="tracking-wide text-center text-lg">
+            {currentSection?.name}
+          </h3>
+          <Badge
+            variant="secondary"
+            className="flex flex-row items-center gap-1 rounded-full text-sm"
+          >
+            <ListOrdered className="size-3.5!" />
+            <div className="flex flex-row items-center gap-0.5">
+              <span className="w-5 text-center">
+                {currentQuetionIndex + 1}
+              </span>
+              <span>/</span>
+              <span className="w-5 text-center">
+                {totalQuestionsNum}
+              </span>
+            </div>
+          </Badge>
+        </div>
+      )}
     </div>
   )
 }

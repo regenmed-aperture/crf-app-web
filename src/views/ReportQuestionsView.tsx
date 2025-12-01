@@ -10,7 +10,7 @@ import { IncytesQuestionType, type IncytesAnalogQuestionModel, type IncytesDateQ
 import { Kbd } from "@/components/ui/kbd";
 import { SliderQuestionBody } from "@/components/questions/SliderQuestionBody";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangleIcon, Info } from "lucide-react";
+import { AlertTriangleIcon, ChevronLeft, ChevronRight, Info } from "lucide-react";
 import { DateQuestionBody } from "@/components/questions/DateQuestionBody";
 import { MultipleChoiceMultipleValueQuestionBody } from "@/components/questions/MultipleChoiceMultipleValueQuestionBody";
 import { Separator } from "@/components/ui/separator";
@@ -414,7 +414,7 @@ export const ReportQuestionsView: React.FC = () => {
                 >
                   <Alert variant="destructive" className={`bg-[#fee] text-red-600 border-1 border-solid border-[#fcc] ${isMobile ? 'py-2' : ''}`}>
                     <AlertTriangleIcon className={isMobile ? 'size-4' : ''}></AlertTriangleIcon>
-                    <AlertTitle className={isMobile ? 'text-xs' : ''}>Please select an anwser before proceeding to the next question</AlertTitle>
+                    <AlertTitle className={isMobile ? 'text-xs' : ''}>Please select an answer before proceeding to the next question</AlertTitle>
                   </Alert>
                 </motion.div>
               )}
@@ -453,7 +453,7 @@ export const ReportQuestionsView: React.FC = () => {
               onClick={onPrevClicked}
               disabled={isFirstQuestion}
             >
-              {!isMobile && <Kbd>←</Kbd>}
+              {!isMobile ? <Kbd>←</Kbd> : <ChevronLeft />}
               <span className={isMobile ? 'text-sm' : ''}>Previous</span>
             </Button>
           </motion.div>
@@ -468,7 +468,7 @@ export const ReportQuestionsView: React.FC = () => {
               onClick={isLastQuestion ? onFinishClicked : onNextClicked}
             >
               <span className={isMobile ? 'text-sm' : ''}>{isLastQuestion ? "Finish" : "Next"}</span>
-              {!isMobile && <Kbd className="bg-muted/40 text-primary">→</Kbd>}
+              {!isMobile ? <Kbd className="bg-muted/40 text-primary">→</Kbd> : <ChevronRight />}
             </Button>
           </motion.div>
         </div>

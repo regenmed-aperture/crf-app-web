@@ -52,6 +52,22 @@ export interface IncytesPatientSurveyNavigationModel extends IncytesResponseMode
   nextDueDate: string;
 }
 
+/** Survey timeline endpoint response */
+export type SurveyTimelineStatus = "Completed" | "Overdue" | "Current" | "Upcoming";
+
+export interface SurveyTimelineItem {
+  surveyId: number;
+  surveyInstanceId: number;
+  title: string;
+  status: SurveyTimelineStatus;
+  dueDate: string;
+  completedDate: string | null;
+}
+
+export interface SurveyTimelineResponse extends IncytesResponseModel {
+  surveys: SurveyTimelineItem[];
+}
+
 export interface IncytesAddBilateralAnswerModel {
   questionAnswerSides: IncytesPatientCaseSurveySide[]
 }

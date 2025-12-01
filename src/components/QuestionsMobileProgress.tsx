@@ -8,6 +8,8 @@ interface Props {
   currentQuestionIndex: number;
   totalQuestions: number;
   className?: string;
+  showSmallDots?: boolean;
+  showBigCircle?: boolean;
 }
 
 export const QuestionsMobileProgress: React.FC<Props> = ({
@@ -15,6 +17,8 @@ export const QuestionsMobileProgress: React.FC<Props> = ({
   currentQuestionIndex,
   totalQuestions,
   className = "",
+  showSmallDots = true,
+  showBigCircle = true,
 }) => {
   let questionsProcessed = 0;
   let currentSectionIndex = -1;
@@ -72,84 +76,81 @@ export const QuestionsMobileProgress: React.FC<Props> = ({
     return `conic-gradient(from -90deg, ${gradientStops.join(", ")})`;
   };
 
-  return (
-    <div className={`flex flex-col items-center gap-3 ${className}`}>
-      <div className="h-5 flex items-center">
-        <motion.span
-          key={currentSectionIndex}
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-sm font-medium text-gray-700"
-        >
-          {sections[currentSectionIndex]?.name || ""}
-        </motion.span>
-      </div>
+  const smallDotsElement = (
+    <div className="flex flex-row items-center gap-1">
+      {sections.map((section, index) => {
+        const isCurrentSection = index === currentSectionIndex;
+        const isCompleted = index < currentSectionIndex;
+        const sectionProgress =
+          isCurrentSection
+            ? ((questionIndexInSection + 1) / section.questionIds.length) *
+              100
+            : isCompleted
+            ? 100
+            : 0;
 
-      <div className="flex items-center gap-4">
-        <div className="relative flex-shrink-0">
+        return (
           <motion.div
-            className="relative w-16 h-16 rounded-full"
-            style={{
-              background: createConicGradient(),
+            key={section.id}
+            className="relative"
+            animate={{
+              scale: isCurrentSection ? 1.2 : 1,
             }}
-            animate={{ rotate: 0 }}
+            transition={{ duration: 0.2 }}
           >
-            <div className="absolute inset-2 bg-white rounded-full flex items-center justify-center">
-              <motion.span
-                className="text-sm font-semibold text-gray-700"
-                key={currentQuestionIndex}
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.2 }}
-              >
-                {currentQuestionIndex + 1}
-              </motion.span>
-            </div>
+            {/* Dot background */}
+            <div
+              className={`rounded-full bg-gray-200`}
+              style={{
+                width: isCurrentSection ? "12px" : "10px",
+                height: isCurrentSection ? "12px" : "10px",
+              }}
+            />
+            {/* Progress fill */}
+            <motion.div
+              className={`absolute inset-0 rounded-full ${getBgColorTWClass(
+                section.color
+              )}`}
+              initial={false}
+              animate={{ scale: sectionProgress / 100 }}
+              transition={{ duration: 0.2 }}
+            />
+          </motion.div>
+        );
+      })}
+    </div>
+  );
+
+  const bigCircleElement = (
+    <div className="relative flex-shrink-0">
+      <motion.div
+        className="relative w-16 h-16 rounded-full"
+        style={{
+          background: createConicGradient(),
+        }}
+        animate={{ rotate: 0 }}
+      >
+        <div className="absolute inset-2 bg-background rounded-full flex items-center justify-center">
+          <motion.div
+            className="text-xs font-semibold text-gray-700 flex flex-row items-center gap-0.5"
+            key={currentQuestionIndex}
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.2 }}
+          >
+            <span>{currentQuestionIndex + 1}</span>
+            <span>/</span>
+            <span>{totalQuestions}</span>
           </motion.div>
         </div>
-        <div className="flex items-center gap-1.5">
-          {sections.map((section, index) => {
-            const isCurrentSection = index === currentSectionIndex;
-            const isCompleted = index < currentSectionIndex;
-            const sectionProgress =
-              isCurrentSection
-                ? ((questionIndexInSection + 1) / section.questionIds.length) *
-                  100
-                : isCompleted
-                ? 100
-                : 0;
+      </motion.div>
+    </div>
+  );
 
-            return (
-              <motion.div
-                key={section.id}
-                className="relative"
-                animate={{
-                  scale: isCurrentSection ? 1.2 : 1,
-                }}
-                transition={{ duration: 0.2 }}
-              >
-                {/* Dot background */}
-                <div
-                  className={`w-2 h-2 rounded-full bg-gray-200`}
-                  style={{
-                    width: isCurrentSection ? "10px" : "8px",
-                    height: isCurrentSection ? "10px" : "8px",
-                  }}
-                />
-                {/* Progress fill */}
-                <motion.div
-                  className={`absolute inset-0 rounded-full ${getBgColorTWClass(
-                    section.color
-                  )}`}
-                  initial={{ scale: 0 }}
-                  animate={{ scale: sectionProgress / 100 }}
-                  transition={{ duration: 0.2 }}
-                />
-              </motion.div>
-            );
-          })}
-        </div>
-      </div>
+  return (
+    <div className={`flex flex-row items-center gap-2 ${className}`}>
+      {showSmallDots && smallDotsElement}
+      {showBigCircle && bigCircleElement}
     </div>
   );
 };

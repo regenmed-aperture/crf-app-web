@@ -11,6 +11,7 @@ import { ReportNotFoundView } from "../views/ReportNotFoundView";
 import { ReportAuthView } from "@/views/ReportAuthView";
 import { isAuthenticated } from "@/util/auth";
 import { setIsFetchingData } from "@/store/slices/reportStateSlice";
+import { ReportLoadingView } from "@/views/ReportLoadingView";
 
 export const ReportRoute: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -39,6 +40,8 @@ export const ReportRoute: React.FC = () => {
         return <ReportQuestionsView />;
       case UIView.VIEW_RESULTS:
         return <ReportResultsView />;
+      case UIView.VIEW_LOADING:
+        return <ReportLoadingView />
       case UIView.VIEW_NOT_FOUND:
       default:
         return <ReportNotFoundView />;

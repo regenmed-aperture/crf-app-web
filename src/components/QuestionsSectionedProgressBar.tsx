@@ -39,7 +39,7 @@ export const QuestionsSectionedProgressBar: React.FC<Props> = ({
   );
 
   return (
-    <div className={`flex flex-row gap-0.5 h-6 ${className}`}>
+    <div className={`flex flex-row gap-0.5 h-5 ${className}`}>
       {sections.map((section, index) => {
         const isCurrentSection = index === currentSectionIndex;
         const isFirst = index === 0;
@@ -71,7 +71,7 @@ export const QuestionsSectionedProgressBar: React.FC<Props> = ({
             <motion.div
               className={`relative overflow-hidden w-full ${borderRadiusClass}`}
               animate={{
-                height: isCurrentSection ? 24 : 16,
+                height: isCurrentSection ? 20 : 14,
               }}
               transition={{
                 duration: 0.2,

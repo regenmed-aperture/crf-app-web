@@ -1,6 +1,8 @@
 import type React from "react";
 import { QuestionsSectionedProgressBar } from "./QuestionsSectionedProgressBar";
+import { QuestionsMobileProgress } from "./QuestionsMobileProgress";
 import { useAppSelector } from "@/store/hooks";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { ReportSection } from "@/models/report";
 import { Button } from "./ui/button";
 import { LayoutGrid, ListOrdered } from "lucide-react";
@@ -19,31 +21,47 @@ export const QuestionsTopIsland: React.FC<Props> = ({
   currentSection,
 }) => {
   const reportState = useAppSelector(state => state.reportState);
+  const isMobile = useIsMobile();
 
   return (
-    <div className="w-full max-w-[800px] bg-white flex flex-col gap-4 rounded-lg shadow-sm border border-t-0">
-      <QuestionsSectionedProgressBar
-        sections={reportState.sections}
-        currentQuestionIndex={currentQuetionIndex}
-        totalQuestions={totalQuestionsNum}
-        className="w-[calc(100%+1.25rem)] -mt-1 -mx-2.5"
-      />
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-2 pb-2">
-        <div className="justify-self-start flex items-center gap-2">
-          <QuestionsViewAllDialogue>
-            <Button
-              variant="secondary"
-              className="hover:cursor-pointer"
-            >
-              <LayoutGrid />
-              View All
-            </Button>
-          </QuestionsViewAllDialogue>
+    <div className="w-full max-w-[800px] bg-white flex flex-col rounded-lg shadow-sm border">
+      {/* Desktop: Horizontal progress bar */}
+      {!isMobile && (
+        <QuestionsSectionedProgressBar
+          sections={reportState.sections}
+          currentQuestionIndex={currentQuetionIndex}
+          totalQuestions={totalQuestionsNum}
+          className="w-full rounded-t-lg"
+        />
+      )}
+      
+      {/* Mobile: Circular progress with dots */}
+      {isMobile && (
+        <div className="pt-3 pb-1">
+          <QuestionsMobileProgress
+            sections={reportState.sections}
+            currentQuestionIndex={currentQuetionIndex}
+            totalQuestions={totalQuestionsNum}
+          />
         </div>
-        <h3 className="text-lg tracking-wide text-center">
-          {currentSection?.name}
-        </h3>
-        <Badge variant="secondary" className="justify-self-end flex flex-row items-center gap-1 rounded-full text-sm">
+      )}
+      
+      <div className="flex items-center justify-center gap-4 px-3 py-2">
+        <QuestionsViewAllDialogue>
+          <Button
+            variant="secondary"
+            className="hover:cursor-pointer"
+          >
+            <LayoutGrid />
+            View All
+          </Button>
+        </QuestionsViewAllDialogue>
+        {!isMobile && (
+          <h3 className="text-lg tracking-wide text-center">
+            {currentSection?.name}
+          </h3>
+        )}
+        <Badge variant="secondary" className="flex flex-row items-center gap-1 rounded-full text-sm">
           <ListOrdered className="size-3.5!" />
           <div className="flex flex-row items-center gap-0.5">
             <span className="w-5 text-center">

@@ -209,7 +209,7 @@ export const ReportQuestionsView: React.FC = () => {
   }
 
   return (
-      <div className="w-full h-full flex justify-center items-center relative overflow-hidden">
+      <div className="w-full h-full flex flex-col items-center relative overflow-hidden">
         {/* Celebration Animation Overlay - Minimal & Sleek */}
         <AnimatePresence>
           {showCelebration && celebrationColor && (
@@ -286,14 +286,17 @@ export const ReportQuestionsView: React.FC = () => {
           )}
         </AnimatePresence>
         
-        <div className="absolute w-full top-[40px] px-8 flex justify-center">
+        {/* Top Island - Fixed Height */}
+        <div className="w-full px-4 md:px-8 pt-4 pb-2 flex justify-center flex-shrink-0">
           <QuestionsTopIsland
             currentQuetionIndex={currentIndex}
             totalQuestionsNum={allQuestionIds.length}
             currentSection={currentSection}
           />
         </div>
-        <div className="w-full max-w-[1500px]">
+        
+        {/* Main Content Area - Flexible with scroll */}
+        <div className="w-full max-w-[1500px] flex-1 flex items-center justify-center relative min-h-0 px-4">
           {/* Previous card */}
           <AnimatePresence mode="popLayout">
             {prevQuestion && (
@@ -315,18 +318,22 @@ export const ReportQuestionsView: React.FC = () => {
           <motion.div
             key={`current-${currentQuestionId}`}
             layoutId={`card-${currentQuestionId}`}
-            className="z-1 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-xl"
+            className="z-10 w-full max-w-xl flex flex-col"
+            style={{ 
+              minHeight: '300px',
+              maxHeight: '100%'
+            }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={transition}
           >
             <Card
-              className="min-h-[300px] py-4 flex flex-col gap-4 rounded-lg border-2 overflow-hidden relative"
+              className="py-4 flex flex-col gap-4 rounded-lg border-2 overflow-hidden relative flex-1"
               style={{
                 boxShadow: currentSection ? getGlowShadowStyle(currentSection.color) : undefined,
               }}
             >
-              <CardHeader className="px-4 flex flex-row gap-2 items-start">
+              <CardHeader className="px-4 flex flex-row gap-2 items-start flex-shrink-0">
                 <Badge variant="secondary" className="justify-self-end flex flex-row items-center gap-1 rounded-full text-md min-w-[30px]">
                   {currentIndex + 1}
                 </Badge>
@@ -334,8 +341,8 @@ export const ReportQuestionsView: React.FC = () => {
                   {currentQuestion.title}
                 </h2>
               </CardHeader>
-              <Separator />
-              <CardContent className="px-4 flex flex-col gap-3 flex-1">
+              <Separator className="flex-shrink-0" />
+              <CardContent className="px-4 flex flex-col gap-3 flex-1 overflow-y-auto min-h-0">
                 {currentQuestion.instructions && (
                   <Alert>
                     <Info />
@@ -425,7 +432,8 @@ export const ReportQuestionsView: React.FC = () => {
             )}
           </AnimatePresence>
         </div>
-        <div className="absolute w-full max-w-xl left-1/2 -translate-x-1/2 bottom-[100px] flex flex-row justify-between items-center gap-1 z-50">
+        {/* Navigation Buttons - Fixed Height at Bottom */}
+        <div className="w-full max-w-xl flex flex-row justify-between items-center gap-1 py-6 flex-shrink-0">
           <motion.div
             whileHover={!isFirstQuestion ? { scale: 1.05 } : {}}
             whileTap={!isFirstQuestion ? { scale: 0.95 } : {}}

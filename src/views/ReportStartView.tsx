@@ -12,6 +12,7 @@ import { CheckCircle2, Circle, CircleQuestionMark, Clock, ListOrdered, TrendingU
 import type React from "react";
 import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
+import CountUp from 'react-countup';
 
 const REPORT_ID_URL_KEY_NAME = "id"
 
@@ -158,8 +159,8 @@ export const ReportStartView: React.FC = () => {
                 <p className="text-sm sm:text-base font-medium">Your Impact</p>
                 <div className="bg-muted/50 rounded-lg p-3 sm:p-4 flex flex-col gap-2 h-[180px] sm:h-[200px] md:h-[230px] justify-center">
                   <div className="flex items-center gap-2">
-                    <TrendingUp size={18} className="sm:w-5 sm:h-5 text-green-600" />
-                    <span className="text-xl sm:text-2xl font-bold">2,847</span>
+                    <TrendingUp size={20} className="sm:w-5 sm:h-5 text-green-600" />
+                    <span className="text-xl sm:text-2xl font-bold"><CountUp start={0} end={2847} separator="," duration={1} delay={0.5} /></span>
                   </div>
                   <p className="text-xs sm:text-sm text-muted-foreground">
                     patients helped by your data contributions

@@ -58,18 +58,18 @@ export const ReportResultsView: React.FC = () => {
               <div className="flex flex-col gap-3">
                 <h3 className="font-semibold">What happens next?</h3>
                 <div className="flex flex-col gap-2">
-                  <div className="flex items-start gap-2">
+                  <motion.div className="flex items-start gap-2" initial={{opacity:0}} animate={{opacity:1}} transition={{duration: 0.5, delay:2}}>
                     <CheckCircle2 className="text-green-600 flex-shrink-0 mt-0.5" size={16} />
                     <p className="text-sm">Your responses will be analyzed alongside other participant data</p>
-                  </div>
-                  <div className="flex items-start gap-2">
+                  </motion.div>
+                  <motion.div className="flex items-start gap-2" initial={{opacity:0}} animate={{opacity:1}} transition={{duration: 0.5, delay:2.5}}>
                     <CheckCircle2 className="text-green-600 flex-shrink-0 mt-0.5" size={16} />
                     <p className="text-sm">Results may be used to improve treatment protocols and patient outcomes</p>
-                  </div>
-                  <div className="flex items-start gap-2">
+                  </motion.div>
+                  <motion.div className="flex items-start gap-2" initial={{opacity:0}} animate={{opacity:1}} transition={{duration: 0.5, delay:3}}>
                     <CheckCircle2 className="text-green-600 flex-shrink-0 mt-0.5" size={16} />
                     <p className="text-sm">You'll be notified when your next report is due</p>
-                  </div>
+                  </motion.div>
                 </div>
               </div>
 
@@ -92,7 +92,7 @@ export const ReportResultsView: React.FC = () => {
           <div className="flex flex-col gap-4 w-80">
             <h2 className="font-semibold">Your Timeline</h2>
             <div className="flex flex-col gap-3">
-              <div className="border rounded-lg bg-white p-4">
+              <motion.div className="border rounded-lg bg-white p-4" initial={{opacity:0}} animate={{opacity:1}} transition={{duration: 1, delay:4}}>
                 <div className="flex items-center gap-3 mb-3">
                   <CheckCircle2 className="text-green-600" size={20} />
                   <div>
@@ -100,9 +100,9 @@ export const ReportResultsView: React.FC = () => {
                     <p className="text-xs text-muted-foreground">Completed today</p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="border rounded-lg bg-white p-4">
+              <motion.div className="border rounded-lg bg-white p-4" initial={{opacity:0}} animate={{opacity:1}} transition={{duration: 1, delay:5}}>
                 <div className="flex items-center gap-3 mb-3">
                   <Calendar className="text-blue-600" size={20} />
                   <div>
@@ -111,9 +111,9 @@ export const ReportResultsView: React.FC = () => {
                   </div>
                 </div>
                 <Badge variant="secondary">In 30 days</Badge>
-              </div>
+              </motion.div>
 
-              <div className="border rounded-lg bg-muted/30 p-4">
+              <motion.div className="border rounded-lg bg-muted/30 p-4" initial={{opacity:0}} animate={{opacity:1}} transition={{duration: 1, delay:6}}>
                 <div className="flex items-center gap-3 mb-2">
                   <Calendar className="text-muted-foreground" size={20} />
                   <div>
@@ -121,7 +121,7 @@ export const ReportResultsView: React.FC = () => {
                     <p className="text-xs text-muted-foreground">Due Feb 3, 2026</p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
             <Separator />

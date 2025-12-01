@@ -10,8 +10,8 @@ import { Check } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
 // TODO: absolutely horrendous but fine for demo
-const EMAIL = "gzh129372@gmail.com"
-const PWD = "oHw3uuXpkKAw8K"
+const EMAIL = "s96067052@gmail.com"
+const PWD = "RSM_agnum2016"
 
 export const ReportAuthView: React.FC = () => {
   const dispatch = useAppDispatch();
